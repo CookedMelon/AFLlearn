@@ -71,7 +71,12 @@ sudo apt-get install libtool
 sudo apt-get install libtool-bin
 ```
 
+一部完成
 
+``` bash
+sudo apt-get install -y libtool libtool-bin python2 bison libglib2.0-dev
+sudo ln -s /bin/python2 /bin/python
+```
 
 此时报错404，一访问发现确实
 
@@ -79,7 +84,7 @@ sudo apt-get install libtool-bin
 
 解决方法把脚本里的`download.qemu-project.org/qemu-`改成`download.qemu.org/qemu-`
 
-漫长的安装后终于。。又报错了，接下来是重点
+此时顺利下载压缩包，漫长的安装后终于。。又报错了，接下来是重点
 
 ![image-20230704162101488](assets/image-20230704162101488.png)
 
@@ -238,6 +243,10 @@ https://github.com/google/AFL/issues/41
 
 ```
 
+更改`build_qemu_support.sh`文件，
+
+![image-20230705104025554](/home/cc/.config/Typora/typora-user-images/image-20230705104025554.png)
+
 终于成功了
 
 ![image-20230705100801079](assets/image-20230705100801079.png)
@@ -257,3 +266,11 @@ afl-fuzz -i fuzz_in -o fuzz_out -Q ./readelf -a @@
 ![image-20230705101958238](assets/image-20230705101958238.png)
 
 ![image-20230705101917332](assets/image-20230705101917332.png)
+
+笔记本上运行
+
+![image-20230705105603257](/home/cc/.config/Typora/typora-user-images/image-20230705105603257.png)
+
+跑了3小时后仍然没有出现crash
+
+![image-20230705135122874](/home/cc/.config/Typora/typora-user-images/image-20230705135122874.png)

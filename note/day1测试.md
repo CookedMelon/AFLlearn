@@ -127,7 +127,7 @@ afl-fuzz -i fuzz_in -o fuzz_out ./afl_test
 ```bash
 sudo su
  
-echo core >/proc/sys/kernel/core_patter
+echo core >/proc/sys/kernel/core_pattern
 ```
 
 
