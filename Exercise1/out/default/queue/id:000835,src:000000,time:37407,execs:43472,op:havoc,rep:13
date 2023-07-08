@@ -1,0 +1,68 @@
+%PDF-1.7
+t]
+/ExtGState 11 0 R
+/
+1 0 obj  % entry point
+<<
+  /Type /Catalog
+  /Pages 2 0 R
+>>
+endobj
+
+2 0 obj
+<<
+  /Type /Pages
+  /MediaBox [ 0 0 200 200 ]
+
+    >>
+  >>
+  /Cont /Count 1
+  /Kids [ 3 0 R ]
+>>
+endobj
+
+3 0 obj
+<<
+  /Type rces <<
+    /Font <<
+      /F1 4/Page
+  /Parent 2 0 R
+  /Resources <<
+    /Font <<
+      /F14 0 R 
+    >>
+  >>
+  /Contents 5 0 R
+>«Ïè¢
+4 0 ob4-1j
+<</Linearized 1ont	  /Subtype /Type1
+  /BaseFont /Times-Roman
+>>
+endobj
+
+5 0 Ôbj   page Font/Tcontent
+<<
+  /Length 44
+>>
+stream
+BT
+7C 50 TD
+/F1 12 Tf
+(Hello, world!) Tj
+ET
+endstream
+endobj
+
+xref
+0 6
+0000000000 65535 f 010 00000 n 
+0000000079 00000 n 173 00000 n 
+0000000301 00000 n 
+0000000380 00000 ns 2 0 R
+>>
+e
+  /Size 6
+  /Root 1 0 R
+>>startxref
+492
+%%E

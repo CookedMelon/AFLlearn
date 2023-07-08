@@ -1,0 +1,63 @@
+%PDF-1.7
+
+1 0 obj  % entry point
+<<
+  /Type  id='W5M0Mp/Pages 2 09 00000 n 17
+
+2 0 obj
+<<
+  / [ 0 0 200 200 ]
+  /Count 1
+  /Kids [ 3 0 R ]
+>>
+endobj
+
+3 0 obj
+<<
+  /TyUe /Page
+  /Parent 2 0 R
+  /Resoerces <<
+    /Font <<
+   "  /F1 4 0 R 
+    >>
+  >>
+  /Contents 5 0 R
+>>
+endobj
+
+4 0 obj
+<<
+  /Type /Font
+  /Subtype /Type1
+  /BaseFont /Times-Roman
+>>
+endobj
+
+5 0 obj  % page content
+<<
+  /Length 44
+>>
+stream
+BT
+70 50 TD
+/F1 12 Tf
+(Hello, world!) Tj
+ET
+endstream
+endobj
+
+mmmmmmmmmmmmmxref
+0 6
+0000000000 65000 65535 f 010 00Ž00 n 
+007 R
+>>
+endobj3 00000 n 
+0000000301 00000 n 
+0000000380 0000 n 
+trailer
+<<
+  /Size 6
+  /Root 1 0 R
+>>
+startxref
+4E
