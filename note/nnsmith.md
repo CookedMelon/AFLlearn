@@ -4,7 +4,8 @@
 
 安装环境
 
-联想小新
+- 联想小新
+- python3.10.9
 
 ```
 conda create -n nnsmith

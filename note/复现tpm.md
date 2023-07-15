@@ -76,7 +76,7 @@
    WantedBy=multi-user.target
    ```
 
-   ![image-20230711134107344](F:/AFLlearn/note/assets/image-20230711134107344.png)
+   
 
    测试
 
@@ -96,7 +96,7 @@
 ```
    [AFL++ f80ba12ce867] / # systemctl daemon-reload
 ERROR:systemctl: dbus.service: Executable path is not absolute, ignoring: @/usr/bin/dbus-daemon @dbus-daemon --system --address=systemd: --nofork --nopidfile --systemd-activation --syslog-only
-   ```
+```
 
    修复
 
@@ -105,9 +105,9 @@ ERROR:systemctl: dbus.service: Executable path is not absolute, ignoring: @/usr/
    ![image-20230711134849270](F:/AFLlearn/note/assets/image-20230711134849270.png)
 
    服务运行成功
-   
+
    ![image-20230711135529336](F:/AFLlearn/note/assets/image-20230711135529336.png)
-   
+
    
 
 ### intel tpm软件包安装
