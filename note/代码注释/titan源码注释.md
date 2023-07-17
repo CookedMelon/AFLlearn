@@ -39,3 +39,28 @@
 # max_valid: 最大有效代码数量
 ```
 
+## model.py
+
+类名：SpanLM
+
+`build_input`：输入函数
+
+`build_input_multi`：创建多输入函数
+
+`model_predict`：模型预测函数
+
+## process_file.py
+
+`clean_code(
+    code: str,
+    prints_and_imports=False,
+    comment=False,
+    cuda=False,
+    fix_syntax=True,
+    fix_session=True,
+    remove_func=True,
+) -> str:`：对代码进行清洗，去除标签。main函数、使解析容易出错的api等
+
+`get_initial_seed_programs(directory: str, library: str, args) -> list`：从指定目录中读取所有的 Python 文件，将这些文件的元数据（API 名称、标签和原始代码）放入 tasks 列表中。如果指定了特定 API 或 ID，那么只会收集与这些参数匹配的文件。同时，如果在目录中存在一个名为 "outputs.json" 的文件，函数还会读取并生成报告"process.log"
+
+`clean_programs(tasks, args) -> dict`：接受任务列表，对每一个任务进行处理：先使用clean_code函数清理原始代码，并将清理后的代码解析为 Python 的 AST。如果解析成功，会将清理后的代码以及其相关元数据添加到返回的字典中。
