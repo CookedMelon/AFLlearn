@@ -158,531 +158,226 @@ def auto_opconfig(
 ![image-20230712233312789](assets/image-20230712233312789.png)
 
 
+## 任务要求
+
+```bash
+nnsmith.model_gen model.type=onnx mgen.max_nodes=5
+```
+
+![Alt text](assets/image-4.png)
 
 
+## 代码分析
 
+### `graph_gen.model_gen`
 
+```python
+def model_gen(
+    opset: Set[Type[AbsOpBase]],
+    method: str = "symbolic",
+    max_nodes=5,
+    seed=None,
+    timeout_ms=10000,
+    **kwargs,
+):
+    assert max_nodes > 0, "max_nodes must >= 1"
 
+    if "symbolic" == method or "symbolic-sinit" == method:
+        gen = SymbolicGen(opset, seed, symbolic_init=True, **kwargs)
+    elif "symbolic-cinit" == method:
+        gen = SymbolicGen(opset, seed, symbolic_init=False, **kwargs)
+    elif "concolic" == method:
+        gen = ConcolicGen(opset, seed, **kwargs)
+    else:
+        raise ValueError(f"Unknown method {method}. Try `symbolic` or `concolic`.")
 
+    gen.abstract_gen(max_node_size=max_nodes, max_gen_millisec=timeout_ms)
 
-
-
-pytest报错
+    return gen
 
 ```
 
+参数：
 
-________________________________________________________ test_narrow_spec_cache_make_and_reload ________________________________________________________
+- `opset`：一组用于模型生成的运算
+- `method`：接收值为以下几种之一：symbolic、symbolic-sinit、symbolic-cinit、concolic，对应不同模型生成方式（之后单独说明）
+- `max_nodes`：规定生成的模型中节点数量上限
+- `seed`：随机种子
+- `timeout_ms`：超时毫秒数
+- `**kwargs`：传进生成模型函数的参数
 
-    def test_narrow_spec_cache_make_and_reload():
-        factory = BackendFactory.init("xla", target="cpu", optmax=True)
-        ModelType = Model.init("tensorflow")
-        opset_lhs = auto_opconfig(ModelType, factory)
-        assert opset_lhs, "Should not be empty... Something must go wrong."
-        opset_rhs = auto_opconfig(ModelType, factory)
-        assert opset_lhs == opset_rhs
-    
-        # Assert types
->       assert isinstance(opset_lhs["core.ReLU"].in_dtypes[0][0], DType)
-E       KeyError: 'core.ReLU'
 
-tests/tensorflow/test_xla_backend.py:22: KeyError
+### 类`graph_gen.SymbolicGen`
 
-_________________________________________________________________ test_render_e2e_pt2 __________________________________________________________________
+方法：
+`__init__`：
 
-    def test_render_e2e_pt2():
-        model = TorchModelCPU()
-        model.torch_model = CNN()
-    
-        model.torch_model.input_like = {"x": AbsTensor([1, 3, 64, 64], DType.float32)}
-    
-        render = Render()
-        render.emit_model(model)
-        render.emit_input(model)
-        render.emit_backend(PT2(target="cpu", optmax=True))
-    
-        rendered = render.render()
-    
-        # pickle is not used (no `ModuleList` in the code)
-        # so no need to import pickle
-        assert (
-            rendered
-            == R"""
-    import numpy as np
-    import torch
-    import pickle
-    
-    # Model definition
-    class M(torch.nn.Module):
-        def __init__(self):
-            super().__init__()
-            self.conv = torch.nn.Conv2d(3, 3, kernel_size=(3, 3), stride=(1, 1))
-            self.bn = torch.nn.BatchNorm2d(3, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-            self.linear = torch.nn.Linear(in_features=62, out_features=3, bias=True)
-    
-        def forward(self, x):
-            conv = self.conv(x);  x = None
-            bn = self.bn(conv);  conv = None
-            linear = self.linear(bn);  bn = None
-            return linear
-    
-    m = M()
-    
-    
-    # Initialize weight
-    # None
-    
-    # Initialize input
-    inp = [np.zeros([1, 3, 64, 64], dtype='float32')]
-    
-    # Compile the model
-    opt = torch.compile(m, fullgraph=True, backend='inductor', mode=None)
-    
-    # Eager run
-    m_out = m(*[torch.from_numpy(v).to('cpu') for v in inp])
-    m_out = [v.cpu().detach() for v in m_out] # torch2numpy
-    m_out = [v.resolve_conj().numpy() if v.is_conj() else v.numpy() for v in m_out] # torch2numpy
-    
-    # Compiled run
-    opt_out = opt(*[torch.from_numpy(v).to('cpu') for v in inp])
-    opt_out = [v.cpu().detach() for v in opt_out] # torch2numpy
-    opt_out = [v.resolve_conj().numpy() if v.is_conj() else v.numpy() for v in opt_out] # torch2numpy
-    
-    # Differential testing
-    for i, (l, r) in enumerate(zip(m_out, opt_out)):
-        np.testing.assert_allclose(l, r, rtol=1e-2, atol=1e-3, err_msg=f"Result mismatch @ index {i}")
-    """
-        )
-    
-        # Run rendered code in a subprocess as a smoke test
->       subprocess.run(
-            ["python", "-c", rendered],
-            check=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
+```python
+    def __init__(
+        self,
+        opset,
+        seed=None,
+        init_fp=False,
+        symbolic_init=True,
+        **kwargs,
+    ):
+        super().__init__(opset, seed, **kwargs)
+        if seed is not None:
+            set_z3_state(seed)
 
-tests/torch/test_render.py:361: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-/usr/lib/python3.8/subprocess.py:493: in run
-    with Popen(*popenargs, **kwargs) as process:
-/usr/lib/python3.8/subprocess.py:858: in __init__
-    self._execute_child(args, executable, preexec_fn, close_fds,
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+        self.solver = z3.Solver()
+        self.last_solution: Optional[z3.ModelRef] = None
 
-self = <subprocess.Popen object at 0x7f16b2286ee0>
-args = ['python', '-c', '\nimport numpy as np\nimport torch\nimport pickle\n\n# Model definition\nclass M(torch.nn.Module):\n...out, opt_out)):\n    np.testing.assert_allclose(l, r, rtol=1e-2, atol=1e-3, err_msg=f"Result mismatch @ index {i}")\n']
-executable = b'python', preexec_fn = None, close_fds = True, pass_fds = (), cwd = None, env = None, startupinfo = None, creationflags = 0, shell = False
-p2cread = -1, p2cwrite = -1, c2pread = 52, c2pwrite = 54, errread = 56, errwrite = 57, restore_signals = True, start_new_session = False
-
-    def _execute_child(self, args, executable, preexec_fn, close_fds,
-                       pass_fds, cwd, env,
-                       startupinfo, creationflags, shell,
-                       p2cread, p2cwrite,
-                       c2pread, c2pwrite,
-                       errread, errwrite,
-                       restore_signals, start_new_session):
-        """Execute program (POSIX version)"""
-    
-        if isinstance(args, (str, bytes)):
-            args = [args]
-        elif isinstance(args, os.PathLike):
-            if shell:
-                raise TypeError('path-like args is not allowed when '
-                                'shell is true')
-            args = [args]
+        # Insert the first node.
+        if symbolic_init:
+            ph = self.make_symbolic_placeholder(
+                self.random_rank(), dtype=DType.float32 if init_fp else None
+            )
         else:
-            args = list(args)
-    
-        if shell:
-            # On Android the default shell is at '/system/bin/sh'.
-            unix_shell = ('/system/bin/sh' if
-                      hasattr(sys, 'getandroidapilevel') else '/bin/sh')
-            args = [unix_shell, "-c"] + args
-            if executable:
-                args[0] = executable
-    
-        if executable is None:
-            executable = args[0]
-    
-        sys.audit("subprocess.Popen", executable, args, cwd, env)
-    
-        if (_USE_POSIX_SPAWN
-                and os.path.dirname(executable)
-                and preexec_fn is None
-                and not close_fds
-                and not pass_fds
-                and cwd is None
-                and (p2cread == -1 or p2cread > 2)
-                and (c2pwrite == -1 or c2pwrite > 2)
-                and (errwrite == -1 or errwrite > 2)
-                and not start_new_session):
-            self._posix_spawn(args, executable, env, restore_signals,
-                              p2cread, p2cwrite,
-                              c2pread, c2pwrite,
-                              errread, errwrite)
-            return
-    
-        orig_executable = executable
-    
-        # For transferring possible exec failure from child to parent.
-        # Data format: "exception name:hex errno:description"
-        # Pickle is not used; it is complex and involves memory allocation.
-        errpipe_read, errpipe_write = os.pipe()
-        # errpipe_write must not be in the standard io 0, 1, or 2 fd range.
-        low_fds_to_close = []
-        while errpipe_write < 3:
-            low_fds_to_close.append(errpipe_write)
-            errpipe_write = os.dup(errpipe_write)
-        for low_fd in low_fds_to_close:
-            os.close(low_fd)
-        try:
-            try:
-                # We must avoid complex work that could involve
-                # malloc or free in the child process to avoid
-                # potential deadlocks, thus we do all this here.
-                # and pass it to fork_exec()
-    
-                if env is not None:
-                    env_list = []
-                    for k, v in env.items():
-                        k = os.fsencode(k)
-                        if b'=' in k:
-                            raise ValueError("illegal environment variable name")
-                        env_list.append(k + b'=' + os.fsencode(v))
-                else:
-                    env_list = None  # Use execv instead of execve.
-                executable = os.fsencode(executable)
-                if os.path.dirname(executable):
-                    executable_list = (executable,)
-                else:
-                    # This matches the behavior of os._execvpe().
-                    executable_list = tuple(
-                        os.path.join(os.fsencode(dir), executable)
-                        for dir in os.get_exec_path(env))
-                fds_to_keep = set(pass_fds)
-                fds_to_keep.add(errpipe_write)
-                self.pid = _posixsubprocess.fork_exec(
-                        args, executable_list,
-                        close_fds, tuple(sorted(map(int, fds_to_keep))),
-                        cwd, env_list,
-                        p2cread, p2cwrite, c2pread, c2pwrite,
-                        errread, errwrite,
-                        errpipe_read, errpipe_write,
-                        restore_signals, start_new_session, preexec_fn)
-                self._child_created = True
-            finally:
-                # be sure the FD is closed no matter what
-                os.close(errpipe_write)
-    
-            self._close_pipe_fds(p2cread, p2cwrite,
-                                 c2pread, c2pwrite,
-                                 errread, errwrite)
-    
-            # Wait for exec to fail or succeed; possibly raising an
-            # exception (limited in size)
-            errpipe_data = bytearray()
-            while True:
-                part = os.read(errpipe_read, 50000)
-                errpipe_data += part
-                if not part or len(errpipe_data) > 50000:
-                    break
-        finally:
-            # be sure the FD is closed no matter what
-            os.close(errpipe_read)
-    
-        if errpipe_data:
-            try:
-                pid, sts = os.waitpid(self.pid, 0)
-                if pid == self.pid:
-                    self._handle_exitstatus(sts)
-                else:
-                    self.returncode = sys.maxsize
-            except ChildProcessError:
-                pass
-    
-            try:
-                exception_name, hex_errno, err_msg = (
-                        errpipe_data.split(b':', 2))
-                # The encoding here should match the encoding
-                # written in by the subprocess implementations
-                # like _posixsubprocess
-                err_msg = err_msg.decode()
-            except ValueError:
-                exception_name = b'SubprocessError'
-                hex_errno = b'0'
-                err_msg = 'Bad exception data from child: {!r}'.format(
-                              bytes(errpipe_data))
-            child_exception_type = getattr(
-                    builtins, exception_name.decode('ascii'),
-                    SubprocessError)
-            if issubclass(child_exception_type, OSError) and hex_errno:
-                errno_num = int(hex_errno, 16)
-                child_exec_never_called = (err_msg == "noexec")
-                if child_exec_never_called:
-                    err_msg = ""
-                    # The error must be from chdir(cwd).
-                    err_filename = cwd
-                else:
-                    err_filename = orig_executable
-                if errno_num != 0:
-                    err_msg = os.strerror(errno_num)
->               raise child_exception_type(errno_num, err_msg, err_filename)
-E               FileNotFoundError: [Errno 2] No such file or directory: 'python'
+            ph = self.make_random_concrete_placeholder(
+                self.random_rank(), dtype=DType.float32 if init_fp else None
+            )
 
-/usr/lib/python3.8/subprocess.py:1704: FileNotFoundError
-_______________________________________________________________ test_render_e2e_torchjit _______________________________________________________________
+        self.insert_init_ph_node(ph)
+        for pred in self.tensor_type_constraints(ph.ttype):
+            self.assume(pred)
+```
+调用超类构造函数。初始化Z3求解器，根据标志创建符号或随机的占位符，调用`insert_init_ph_node`作为第一个节点插入。调用`assume`假定占位符类型的张量约束，
 
-    def test_render_e2e_torchjit():
-        model = TorchModelCPU()
-        model.torch_model = CNN()
-    
-        model.torch_model.input_like = {"x": AbsTensor([1, 3, 64, 64], DType.float32)}
-    
-        render = Render()
-        render.emit_model(model)
-        render.emit_input(model)
-        render.emit_backend(TorchJIT(target="cpu", optmax=True))
-    
-        rendered = render.render()
-    
-        # pickle is not used (no `ModuleList` in the code)
-        # so no need to import pickle
-        assert (
-            rendered
-            == R"""
-    import numpy as np
-    import torch
-    import pickle
-    
-    # Model definition
-    class M(torch.nn.Module):
-        def __init__(self):
-            super().__init__()
-            self.conv = torch.nn.Conv2d(3, 3, kernel_size=(3, 3), stride=(1, 1))
-            self.bn = torch.nn.BatchNorm2d(3, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-            self.linear = torch.nn.Linear(in_features=62, out_features=3, bias=True)
-    
-        def forward(self, x):
-            conv = self.conv(x);  x = None
-            bn = self.bn(conv);  conv = None
-            linear = self.linear(bn);  bn = None
-            return linear
-    
-    m = M()
-    
-    
-    # Initialize weight
-    # None
-    
-    # Initialize input
-    inp = [np.zeros([1, 3, 64, 64], dtype='float32')]
-    
-    # Compile the model
-    opt = torch.jit.trace(m, [torch.from_numpy(v).to('cpu') for v in inp])
-    
-    # Eager run
-    m_out = m(*[torch.from_numpy(v).to('cpu') for v in inp])
-    m_out = [v.cpu().detach() for v in m_out] # torch2numpy
-    m_out = [v.resolve_conj().numpy() if v.is_conj() else v.numpy() for v in m_out] # torch2numpy
-    
-    # Compiled run
-    opt_out = opt(*[torch.from_numpy(v).to('cpu') for v in inp])
-    opt_out = [v.cpu().detach() for v in opt_out] # torch2numpy
-    opt_out = [v.resolve_conj().numpy() if v.is_conj() else v.numpy() for v in opt_out] # torch2numpy
-    
-    # Differential testing
-    for i, (l, r) in enumerate(zip(m_out, opt_out)):
-        np.testing.assert_allclose(l, r, rtol=1e-2, atol=1e-3, err_msg=f"Result mismatch @ index {i}")
-    """
-        )
-    
-        # Run rendered code in a subprocess as a smoke test
->       subprocess.run(
-            ["python", "-c", rendered],
-            check=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
+`assume(self, c: z3.BoolRef)`：
+接受一个布尔表达式添加到求解器中
 
-tests/torch/test_render.py:434: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-/usr/lib/python3.8/subprocess.py:493: in run
-    with Popen(*popenargs, **kwargs) as process:
-/usr/lib/python3.8/subprocess.py:858: in __init__
-    self._execute_child(args, executable, preexec_fn, close_fds,
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+`check_sat(self, *assumptions)`：
+接受一组假设条件，检查他们是否满足求解器，如果满足会设置`last_solution`这个属性作为求解器模型
 
-self = <subprocess.Popen object at 0x7f16b2451460>
-args = ['python', '-c', '\nimport numpy as np\nimport torch\nimport pickle\n\n# Model definition\nclass M(torch.nn.Module):\n...out, opt_out)):\n    np.testing.assert_allclose(l, r, rtol=1e-2, atol=1e-3, err_msg=f"Result mismatch @ index {i}")\n']
-executable = b'python', preexec_fn = None, close_fds = True, pass_fds = (), cwd = None, env = None, startupinfo = None, creationflags = 0, shell = False
-p2cread = -1, p2cwrite = -1, c2pread = 52, c2pwrite = 54, errread = 56, errwrite = 57, restore_signals = True, start_new_session = False
+`try_forward_insert_at(self, node: AbsOpBase, input_vars: List[str]) -> bool`：
 
-    def _execute_child(self, args, executable, preexec_fn, close_fds,
-                       pass_fds, cwd, env,
-                       startupinfo, creationflags, shell,
-                       p2cread, p2cwrite,
-                       c2pread, c2pwrite,
-                       errread, errwrite,
-                       restore_signals, start_new_session):
-        """Execute program (POSIX version)"""
-    
-        if isinstance(args, (str, bytes)):
-            args = [args]
-        elif isinstance(args, os.PathLike):
-            if shell:
-                raise TypeError('path-like args is not allowed when '
-                                'shell is true')
-            args = [args]
-        else:
-            args = list(args)
-    
-        if shell:
-            # On Android the default shell is at '/system/bin/sh'.
-            unix_shell = ('/system/bin/sh' if
-                      hasattr(sys, 'getandroidapilevel') else '/bin/sh')
-            args = [unix_shell, "-c"] + args
-            if executable:
-                args[0] = executable
-    
-        if executable is None:
-            executable = args[0]
-    
-        sys.audit("subprocess.Popen", executable, args, cwd, env)
-    
-        if (_USE_POSIX_SPAWN
-                and os.path.dirname(executable)
-                and preexec_fn is None
-                and not close_fds
-                and not pass_fds
-                and cwd is None
-                and (p2cread == -1 or p2cread > 2)
-                and (c2pwrite == -1 or c2pwrite > 2)
-                and (errwrite == -1 or errwrite > 2)
-                and not start_new_session):
-            self._posix_spawn(args, executable, env, restore_signals,
-                              p2cread, p2cwrite,
-                              c2pread, c2pwrite,
-                              errread, errwrite)
-            return
-    
-        orig_executable = executable
-    
-        # For transferring possible exec failure from child to parent.
-        # Data format: "exception name:hex errno:description"
-        # Pickle is not used; it is complex and involves memory allocation.
-        errpipe_read, errpipe_write = os.pipe()
-        # errpipe_write must not be in the standard io 0, 1, or 2 fd range.
-        low_fds_to_close = []
-        while errpipe_write < 3:
-            low_fds_to_close.append(errpipe_write)
-            errpipe_write = os.dup(errpipe_write)
-        for low_fd in low_fds_to_close:
-            os.close(low_fd)
-        try:
-            try:
-                # We must avoid complex work that could involve
-                # malloc or free in the child process to avoid
-                # potential deadlocks, thus we do all this here.
-                # and pass it to fork_exec()
-    
-                if env is not None:
-                    env_list = []
-                    for k, v in env.items():
-                        k = os.fsencode(k)
-                        if b'=' in k:
-                            raise ValueError("illegal environment variable name")
-                        env_list.append(k + b'=' + os.fsencode(v))
-                else:
-                    env_list = None  # Use execv instead of execve.
-                executable = os.fsencode(executable)
-                if os.path.dirname(executable):
-                    executable_list = (executable,)
-                else:
-                    # This matches the behavior of os._execvpe().
-                    executable_list = tuple(
-                        os.path.join(os.fsencode(dir), executable)
-                        for dir in os.get_exec_path(env))
-                fds_to_keep = set(pass_fds)
-                fds_to_keep.add(errpipe_write)
-                self.pid = _posixsubprocess.fork_exec(
-                        args, executable_list,
-                        close_fds, tuple(sorted(map(int, fds_to_keep))),
-                        cwd, env_list,
-                        p2cread, p2cwrite, c2pread, c2pwrite,
-                        errread, errwrite,
-                        errpipe_read, errpipe_write,
-                        restore_signals, start_new_session, preexec_fn)
-                self._child_created = True
-            finally:
-                # be sure the FD is closed no matter what
-                os.close(errpipe_write)
-    
-            self._close_pipe_fds(p2cread, p2cwrite,
-                                 c2pread, c2pwrite,
-                                 errread, errwrite)
-    
-            # Wait for exec to fail or succeed; possibly raising an
-            # exception (limited in size)
-            errpipe_data = bytearray()
-            while True:
-                part = os.read(errpipe_read, 50000)
-                errpipe_data += part
-                if not part or len(errpipe_data) > 50000:
-                    break
-        finally:
-            # be sure the FD is closed no matter what
-            os.close(errpipe_read)
-    
-        if errpipe_data:
-            try:
-                pid, sts = os.waitpid(self.pid, 0)
-                if pid == self.pid:
-                    self._handle_exitstatus(sts)
-                else:
-                    self.returncode = sys.maxsize
-            except ChildProcessError:
-                pass
-    
-            try:
-                exception_name, hex_errno, err_msg = (
-                        errpipe_data.split(b':', 2))
-                # The encoding here should match the encoding
-                # written in by the subprocess implementations
-                # like _posixsubprocess
-                err_msg = err_msg.decode()
-            except ValueError:
-                exception_name = b'SubprocessError'
-                hex_errno = b'0'
-                err_msg = 'Bad exception data from child: {!r}'.format(
-                              bytes(errpipe_data))
-            child_exception_type = getattr(
-                    builtins, exception_name.decode('ascii'),
-                    SubprocessError)
-            if issubclass(child_exception_type, OSError) and hex_errno:
-                errno_num = int(hex_errno, 16)
-                child_exec_never_called = (err_msg == "noexec")
-                if child_exec_never_called:
-                    err_msg = ""
-                    # The error must be from chdir(cwd).
-                    err_filename = cwd
-                else:
-                    err_filename = orig_executable
-                if errno_num != 0:
-                    err_msg = os.strerror(errno_num)
->               raise child_exception_type(errno_num, err_msg, err_filename)
-E               FileNotFoundError: [Errno 2] No such file or directory: 'python'
+```python
+    def try_forward_insert_at(self, node: AbsOpBase, input_vars: List[str]) -> bool:
+        # 将输入变量转换为张量
+        itensors = [self.ir.vars[vname] for vname in input_vars]
+        # 获取该节点的约束条件
+        constraints = node.checked_requires(itensors)
+        # 日志
+        if SMT_LOG.getEffectiveLevel() <= logging.DEBUG:
+            SMT_LOG.debug(f"---> Trying to solve: {node} ~ {constraints}")
 
-/usr/lib/python3.8/subprocess.py:1704: FileNotFoundError
+        # make a copy
+        # 对输入张量进行类型转换
+        otensors = node.checked_type_transfer(itensors)
 
-=============================================================== short test summary info ================================================================
-FAILED tests/tensorflow/test_tflite_backend.py::test_narrow_spec_cache_make_and_reload - KeyError: 'core.ReLU'
-FAILED tests/tensorflow/test_xla_backend.py::test_narrow_spec_cache_make_and_reload - KeyError: 'core.ReLU'
-FAILED tests/torch/test_render.py::test_render_e2e_pt2 - FileNotFoundError: [Errno 2] No such file or directory: 'python'
-FAILED tests/torch/test_render.py::test_render_e2e_torchjit - FileNotFoundError: [Errno 2] No such file or directory: 'python'
-========================================== 4 failed, 35 passed, 2 skipped, 1129 warnings in 284.59s (0:04:44) ==========================================
+        # 对每个输出张量进行检查，如果其大于零则添加到约束条件中
+        for aten in otensors:
+            for c in aten.gt_zero():
+                constraints.append(c)
+
+        # limit output tensor size
+        # 限制输出张量的大小
+        for aten in otensors:
+            constraints.extend(self.tensor_type_constraints(aten))
+        # 使用Z3求解器检查这些约束条件是否满足
+        check_res = self.check_sat(*constraints)
+
+        if check_res != z3.sat:
+            return False
+        # 如果结果满足，那么将这些约束条件添加到求解器中
+        for c in constraints:
+            self.assume(c)
+
+        if MGEN_LOG.getEffectiveLevel() <= logging.DEBUG:
+            MGEN_LOG.debug(f">> Forward insert: {node}")
+            MGEN_LOG.debug(f"\tinputs:  {itensors}")
+            MGEN_LOG.debug(f"\toutputs: {otensors}")
+        # 绑定输入和输出张量
+        node.bind_input_like(itensors)
+        node.bind_output_like(otensors)
+        # 在模型中插入这个节点
+        self.forward_insert_node(node, input_vars)
+        return True
+```
+尝试以正向方式插入节点，根据节点要求创建约束条件，检查是否可以满足，若满足，假设约束条件并插入节点，返回True。失败则返回False。
+
+`try_occupy_placeholder(self, node: AbsOpBase, phvars: List[str]) -> bool`：
 
 ```
+    def try_occupy_placeholder(self, node: AbsOpBase, phvars: List[str]) -> bool:
+        if MGEN_LOG.getEffectiveLevel() <= logging.DEBUG:
+            MGEN_LOG.debug(
+                f"---> Trying to occupy placeholder: {phvars} for node {node}"
+            )
+        # S2 - create X: X can be
+        #                   - a new placeholder (fallback)
+        #                   - an existing alive shape
+        # S2 - 创建X：X可以是一个新的占位符（后备）或者是一个现有的可用shape
 
+        # 将占位符变量名转化为张量
+        otensors = [self.ir.vars[name] for name in phvars]
 
+        # S2.2: try to reuse some existing outputs;
+        # TODO: allow reuse existing alive shapes
+        # n_inps = len(node.inp_ranks)
+        # max_try = 2
+        # n_reuse = n_inps - 1
+        # while n_reuse > 0 and max_try > 0:
+        #     # TODO...
+        #     max_try -= 1
+        #     n_reuse -= 1
 
+        # S2.2: reusing outputs failed. as a fallback, promote all free vars to placeholders.
+
+        # S2.2: 尝试复用一些现有的输出
+        # TODO: 允许复用现有的可用形状
+
+        # S2.2: 复用输出失败。作为后备方案，将所有自由变量提升为占位符。
+        phs_as_op_inputs: List[Placeholder] = []
+        constraints = []
+        # 最输入的rank和数据类型进行推断
+        for rank, dtype in node.deduct_inp_ranks_and_dtype(otensors):
+            # oversample rank 4 tensors as they may be more important
+            # 过采样rank 4张量，因为它们可能更重要
+            ph = self.make_symbolic_placeholder(
+                rank if rank != -1 else self.random_rank(), dtype=dtype
+            )
+            phs_as_op_inputs.append(ph)
+            constraints.extend(ph.ttype.gt_zero())
+            constraints.extend(self.tensor_type_constraints(ph.ttype))
+        # 获取输入张量的类型
+        itensors = [p.ttype for p in phs_as_op_inputs]
+        # 将节点要求的约束添加到约束列表中
+        constraints.extend(node.checked_requires(itensors))
+        # 对输入张量的类型进行推断
+        inferred_otensors = node.checked_type_transfer(itensors)
+        # 遍历推断出的张量，对其shape进行检查，如果shape等于输出张量的shape并且大于0，就将其添加到约束中
+        for i, shape in enumerate(inferred_otensors):
+            constraints.extend(shape.eq(otensors[i]))
+            constraints.extend(shape.gt_zero())
+        # 检查约束是否满足
+        check_res = self.check_sat(*constraints)
+        # 如果约束不满足，则返回False
+        if check_res != z3.sat:
+            return False
+
+        if MGEN_LOG.getEffectiveLevel() <= logging.DEBUG:
+            MGEN_LOG.debug(f">> Backward insert: {node}")
+            MGEN_LOG.debug(f"\tinputs:  {phs_as_op_inputs}")
+        # 将满足的约束添加到求解器中
+        for c in constraints:
+            self.assume(c)
+
+        # succ.
+        # 记录输入变量的名称
+        input_vars = []
+        # 对每个作为操作输入的占位符，在模型中向前插入一个节点，并记录其返回的变量名
+        for ph in phs_as_op_inputs:
+            inst = self.forward_insert_node(ph, [])
+            input_vars.append(inst.retval())
+        # 绑定输入和输出张量
+        node.bind_input_like(itensors)
+        node.bind_output_like(inferred_otensors)
+        # 在模型中向后插入节点
+        self.backward_insert_node(node, input_vars, phvars)
+
+        return True
+
+```
+尝试在模型中用一个占位符插入一个节点。创建一个新的占唯独或者复用现有输出。根据节点的需求生成约束，检查约束是否满足。若满足，则将节点插入模型。

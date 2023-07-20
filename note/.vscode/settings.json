@@ -2,4 +2,8 @@
     "markdown.copyFiles.destination": {
         "**/*": "${documentWorkspaceFolder}/assets/"
     },
+    // "markdown-preview-enhanced.previewTheme": "${documentWorkspaceFolder}/css/mystyle.css",
+    // "markdown-preview-enhanced.codeBlockTheme": "${documentWorkspaceFolder}/css/codeblock.css",
+    "markdown-preview-enhanced.previewTheme":"atom-light.css",
+    "markdown-preview-enhanced.codeBlockTheme":"coy.css"
 }
