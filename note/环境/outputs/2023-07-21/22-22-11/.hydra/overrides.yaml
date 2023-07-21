@@ -1,0 +1,2 @@
+- model.type=onnx
+- mgen.max_nodes=5

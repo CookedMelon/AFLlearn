@@ -22,6 +22,44 @@ sample = model.generate(**inputs, max_length=128)
 print(tokenizer.decode(sample[0]))
 ```
 
+跑完后结果如下
+
+![Alt text](../../../assets/image-3.png)
+
+用显卡跑，试了很久，总结下来要做以下几步
+安装Cuda，安装CudaNN，安装带显卡的torch(一般的torch不带显卡)
+
+安装CudaNN https://developer.nvidia.com/rdp/cudnn-download
+安装带显卡的torch https://pytorch.org/get-started/locally/  （他给的几个版本都没有12.2，先装个11.8的试试，pip的装不上，用conda的）
+![Alt text](../../../assets/image-4.png)
+
+
+```
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-12.2/extras/CUPTI/lib64
+```
+
+确认有GPU
+
+```
+import tensorflow as tf
+print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
+```
+
+
+使用以下命令检测显卡
+
+```bash
+watch -n 5 nvidia-smi
+```
+
+在上面的代码中加上
+
+```python
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+```
+
+
 下载报错
 ```
 >>> model = AutoModelForCausalLM.from_pretrained("Salesforce/codegen25-7b-mono")
@@ -63,4 +101,19 @@ set TRANSFORMERS_CACHE=D:\environment\transformers # 这是临时设置，永久
 ```
 pip install sentencepiece
 pip install torch # 一开始没加后来model加载不出来提示要torch
+```
+
+## 重配
+
+大佬告诉我这个模型是7b的，很慢，换小的跑
+
+```python
+import torch
+from transformers import AutoTokenizer, AutoModelForCausalLM
+
+tokenizer = AutoTokenizer.from_pretrained("Salesforce/codegen-2B-mono")
+model = AutoModelForCausalLM.from_pretrained("Salesforce/codegen-2B-mono")
+inputs = tokenizer("# this function prints hello world", return_tensors="pt")
+sample = model.generate(**inputs, max_length=128)
+print(tokenizer.decode(sample[0], truncate_before_pattern=[r"\n\n^#", "^'''", "\n\n\n"]))
 ```
