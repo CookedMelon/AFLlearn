@@ -1,6 +1,0 @@
-[2023-07-21 22:22:11,041][mgen][INFO] - Using seed 937447715
-[2023-07-21 22:22:13,090][dtest][INFO] - Loading topset from /home/cc/.cache/nnsmith-0.1.0/ONNXModelCPU_exportable.yaml.
-[2023-07-21 22:22:13,090][dtest][INFO] - To regenerate the topset, delete the cache file above and restart.
-[2023-07-21 22:22:13,513][mgen][INFO] - 12 symbols and 39 constraints.
-[2023-07-21 22:22:13,514][mgen][INFO] - Generated DNN has 6 variables and 5 operators.
-[2023-07-21 22:22:13,606][mgen][INFO] - Time:  @Generation: 0.23s  @Materialization: 0.09s  @Save: 0.00s
