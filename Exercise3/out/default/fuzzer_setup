@@ -1,0 +1,8 @@
+# environment variables:
+AFL_CUSTOM_INFO_PROGRAM=/home/cc/tcpdump-4.9.2/tcpdump
+AFL_CUSTOM_INFO_PROGRAM_ARGV=-vvvvXX -ee -nn -r @@
+AFL_CUSTOM_INFO_OUT=./out/default
+AFL_PATH=/home/cc/AFL-2.57b/
+AFL_SKIP_CPUFREQ=1
+# command line:
+'afl-fuzz' '-i' './tests' '-o' './out' '-m' 'none' '/home/cc/tcpdump-4.9.2/tcpdump' '-vvvvXX' '-ee' '-nn' '-r' '@@'

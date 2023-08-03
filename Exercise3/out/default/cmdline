@@ -1,0 +1,6 @@
+/home/cc/tcpdump-4.9.2/tcpdump
+-vvvvXX
+-ee
+-nn
+-r
+@@
