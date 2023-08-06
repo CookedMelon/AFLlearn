@@ -1,0 +1,800 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - app2.info - libtiff/tif_print.c</title>
+  <link rel="stylesheet" type="text/css" href="../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../index.html">top level</a> - <a href="index.html">libtiff</a> - tif_print.c<span style="font-size: 80%;"> (source / <a href="tif_print.c.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">app2.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">80</td>
+            <td class="headerCovTableEntry">450</td>
+            <td class="headerCovTableEntryLo">17.8 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2023-08-04 12:02:59</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">1</td>
+            <td class="headerCovTableEntry">6</td>
+            <td class="headerCovTableEntryLo">16.7 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /* $Id: tif_print.c,v 1.61 2012-12-12 22:50:18 tgl Exp $ */</a>
+<a name="2"><span class="lineNum">       2 </span>            : </a>
+<a name="3"><span class="lineNum">       3 </span>            : /*</a>
+<a name="4"><span class="lineNum">       4 </span>            :  * Copyright (c) 1988-1997 Sam Leffler</a>
+<a name="5"><span class="lineNum">       5 </span>            :  * Copyright (c) 1991-1997 Silicon Graphics, Inc.</a>
+<a name="6"><span class="lineNum">       6 </span>            :  *</a>
+<a name="7"><span class="lineNum">       7 </span>            :  * Permission to use, copy, modify, distribute, and sell this software and </a>
+<a name="8"><span class="lineNum">       8 </span>            :  * its documentation for any purpose is hereby granted without fee, provided</a>
+<a name="9"><span class="lineNum">       9 </span>            :  * that (i) the above copyright notices and this permission notice appear in</a>
+<a name="10"><span class="lineNum">      10 </span>            :  * all copies of the software and related documentation, and (ii) the names of</a>
+<a name="11"><span class="lineNum">      11 </span>            :  * Sam Leffler and Silicon Graphics may not be used in any advertising or</a>
+<a name="12"><span class="lineNum">      12 </span>            :  * publicity relating to the software without the specific, prior written</a>
+<a name="13"><span class="lineNum">      13 </span>            :  * permission of Sam Leffler and Silicon Graphics.</a>
+<a name="14"><span class="lineNum">      14 </span>            :  * </a>
+<a name="15"><span class="lineNum">      15 </span>            :  * THE SOFTWARE IS PROVIDED &quot;AS-IS&quot; AND WITHOUT WARRANTY OF ANY KIND, </a>
+<a name="16"><span class="lineNum">      16 </span>            :  * EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY </a>
+<a name="17"><span class="lineNum">      17 </span>            :  * WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.  </a>
+<a name="18"><span class="lineNum">      18 </span>            :  * </a>
+<a name="19"><span class="lineNum">      19 </span>            :  * IN NO EVENT SHALL SAM LEFFLER OR SILICON GRAPHICS BE LIABLE FOR</a>
+<a name="20"><span class="lineNum">      20 </span>            :  * ANY SPECIAL, INCIDENTAL, INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND,</a>
+<a name="21"><span class="lineNum">      21 </span>            :  * OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,</a>
+<a name="22"><span class="lineNum">      22 </span>            :  * WHETHER OR NOT ADVISED OF THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF </a>
+<a name="23"><span class="lineNum">      23 </span>            :  * LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE </a>
+<a name="24"><span class="lineNum">      24 </span>            :  * OF THIS SOFTWARE.</a>
+<a name="25"><span class="lineNum">      25 </span>            :  */</a>
+<a name="26"><span class="lineNum">      26 </span>            : </a>
+<a name="27"><span class="lineNum">      27 </span>            : /*</a>
+<a name="28"><span class="lineNum">      28 </span>            :  * TIFF Library.</a>
+<a name="29"><span class="lineNum">      29 </span>            :  *</a>
+<a name="30"><span class="lineNum">      30 </span>            :  * Directory Printing Support</a>
+<a name="31"><span class="lineNum">      31 </span>            :  */</a>
+<a name="32"><span class="lineNum">      32 </span>            : #include &quot;tiffiop.h&quot;</a>
+<a name="33"><span class="lineNum">      33 </span>            : #include &lt;stdio.h&gt;</a>
+<a name="34"><span class="lineNum">      34 </span>            : </a>
+<a name="35"><span class="lineNum">      35 </span>            : #include &lt;ctype.h&gt;</a>
+<a name="36"><span class="lineNum">      36 </span>            : </a>
+<a name="37"><span class="lineNum">      37 </span>            : static void</a>
+<a name="38"><span class="lineNum">      38 </span>            : _TIFFprintAsciiBounded(FILE* fd, const char* cp, int max_chars);</a>
+<a name="39"><span class="lineNum">      39 </span>            : </a>
+<a name="40"><span class="lineNum">      40 </span>            : static const char *photoNames[] = {</a>
+<a name="41"><span class="lineNum">      41 </span>            :     &quot;min-is-white&quot;,                           /* PHOTOMETRIC_MINISWHITE */</a>
+<a name="42"><span class="lineNum">      42 </span>            :     &quot;min-is-black&quot;,                           /* PHOTOMETRIC_MINISBLACK */</a>
+<a name="43"><span class="lineNum">      43 </span>            :     &quot;RGB color&quot;,                              /* PHOTOMETRIC_RGB */</a>
+<a name="44"><span class="lineNum">      44 </span>            :     &quot;palette color (RGB from colormap)&quot;,      /* PHOTOMETRIC_PALETTE */</a>
+<a name="45"><span class="lineNum">      45 </span>            :     &quot;transparency mask&quot;,                      /* PHOTOMETRIC_MASK */</a>
+<a name="46"><span class="lineNum">      46 </span>            :     &quot;separated&quot;,                              /* PHOTOMETRIC_SEPARATED */</a>
+<a name="47"><span class="lineNum">      47 </span>            :     &quot;YCbCr&quot;,                                  /* PHOTOMETRIC_YCBCR */</a>
+<a name="48"><span class="lineNum">      48 </span>            :     &quot;7 (0x7)&quot;,</a>
+<a name="49"><span class="lineNum">      49 </span>            :     &quot;CIE L*a*b*&quot;,                             /* PHOTOMETRIC_CIELAB */</a>
+<a name="50"><span class="lineNum">      50 </span>            :     &quot;ICC L*a*b*&quot;,                             /* PHOTOMETRIC_ICCLAB */</a>
+<a name="51"><span class="lineNum">      51 </span>            :     &quot;ITU L*a*b*&quot;                              /* PHOTOMETRIC_ITULAB */</a>
+<a name="52"><span class="lineNum">      52 </span>            : };</a>
+<a name="53"><span class="lineNum">      53 </span>            : #define NPHOTONAMES     (sizeof (photoNames) / sizeof (photoNames[0]))</a>
+<a name="54"><span class="lineNum">      54 </span>            : </a>
+<a name="55"><span class="lineNum">      55 </span>            : static const char *orientNames[] = {</a>
+<a name="56"><span class="lineNum">      56 </span>            :     &quot;0 (0x0)&quot;,</a>
+<a name="57"><span class="lineNum">      57 </span>            :     &quot;row 0 top, col 0 lhs&quot;,                   /* ORIENTATION_TOPLEFT */</a>
+<a name="58"><span class="lineNum">      58 </span>            :     &quot;row 0 top, col 0 rhs&quot;,                   /* ORIENTATION_TOPRIGHT */</a>
+<a name="59"><span class="lineNum">      59 </span>            :     &quot;row 0 bottom, col 0 rhs&quot;,                        /* ORIENTATION_BOTRIGHT */</a>
+<a name="60"><span class="lineNum">      60 </span>            :     &quot;row 0 bottom, col 0 lhs&quot;,                        /* ORIENTATION_BOTLEFT */</a>
+<a name="61"><span class="lineNum">      61 </span>            :     &quot;row 0 lhs, col 0 top&quot;,                   /* ORIENTATION_LEFTTOP */</a>
+<a name="62"><span class="lineNum">      62 </span>            :     &quot;row 0 rhs, col 0 top&quot;,                   /* ORIENTATION_RIGHTTOP */</a>
+<a name="63"><span class="lineNum">      63 </span>            :     &quot;row 0 rhs, col 0 bottom&quot;,                        /* ORIENTATION_RIGHTBOT */</a>
+<a name="64"><span class="lineNum">      64 </span>            :     &quot;row 0 lhs, col 0 bottom&quot;,                        /* ORIENTATION_LEFTBOT */</a>
+<a name="65"><span class="lineNum">      65 </span>            : };</a>
+<a name="66"><span class="lineNum">      66 </span>            : #define NORIENTNAMES    (sizeof (orientNames) / sizeof (orientNames[0]))</a>
+<a name="67"><span class="lineNum">      67 </span>            : </a>
+<a name="68"><span class="lineNum">      68 </span>            : static void</a>
+<a name="69"><span class="lineNum">      69 </span><span class="lineNoCov">          0 : _TIFFPrintField(FILE* fd, const TIFFField *fip,</span></a>
+<a name="70"><span class="lineNum">      70 </span>            :                 uint32 value_count, void *raw_data)</a>
+<a name="71"><span class="lineNum">      71 </span>            : {</a>
+<a name="72"><span class="lineNum">      72 </span>            :         uint32 j;</a>
+<a name="73"><span class="lineNum">      73 </span>            :                 </a>
+<a name="74"><span class="lineNum">      74 </span><span class="lineNoCov">          0 :         fprintf(fd, &quot;  %s: &quot;, fip-&gt;field_name);</span></a>
+<a name="75"><span class="lineNum">      75 </span>            : </a>
+<a name="76"><span class="lineNum">      76 </span><span class="lineNoCov">          0 :         for(j = 0; j &lt; value_count; j++) {</span></a>
+<a name="77"><span class="lineNum">      77 </span><span class="lineNoCov">          0 :                 if(fip-&gt;field_type == TIFF_BYTE)</span></a>
+<a name="78"><span class="lineNum">      78 </span><span class="lineNoCov">          0 :                         fprintf(fd, &quot;%u&quot;, ((uint8 *) raw_data)[j]);</span></a>
+<a name="79"><span class="lineNum">      79 </span><span class="lineNoCov">          0 :                 else if(fip-&gt;field_type == TIFF_UNDEFINED)</span></a>
+<a name="80"><span class="lineNum">      80 </span><span class="lineNoCov">          0 :                         fprintf(fd, &quot;0x%x&quot;,</span></a>
+<a name="81"><span class="lineNum">      81 </span><span class="lineNoCov">          0 :                             (unsigned int) ((unsigned char *) raw_data)[j]);</span></a>
+<a name="82"><span class="lineNum">      82 </span><span class="lineNoCov">          0 :                 else if(fip-&gt;field_type == TIFF_SBYTE)</span></a>
+<a name="83"><span class="lineNum">      83 </span><span class="lineNoCov">          0 :                         fprintf(fd, &quot;%d&quot;, ((int8 *) raw_data)[j]);</span></a>
+<a name="84"><span class="lineNum">      84 </span><span class="lineNoCov">          0 :                 else if(fip-&gt;field_type == TIFF_SHORT)</span></a>
+<a name="85"><span class="lineNum">      85 </span><span class="lineNoCov">          0 :                         fprintf(fd, &quot;%u&quot;, ((uint16 *) raw_data)[j]);</span></a>
+<a name="86"><span class="lineNum">      86 </span><span class="lineNoCov">          0 :                 else if(fip-&gt;field_type == TIFF_SSHORT)</span></a>
+<a name="87"><span class="lineNum">      87 </span><span class="lineNoCov">          0 :                         fprintf(fd, &quot;%d&quot;, ((int16 *) raw_data)[j]);</span></a>
+<a name="88"><span class="lineNum">      88 </span><span class="lineNoCov">          0 :                 else if(fip-&gt;field_type == TIFF_LONG)</span></a>
+<a name="89"><span class="lineNum">      89 </span><span class="lineNoCov">          0 :                         fprintf(fd, &quot;%lu&quot;,</span></a>
+<a name="90"><span class="lineNum">      90 </span><span class="lineNoCov">          0 :                             (unsigned long)((uint32 *) raw_data)[j]);</span></a>
+<a name="91"><span class="lineNum">      91 </span><span class="lineNoCov">          0 :                 else if(fip-&gt;field_type == TIFF_SLONG)</span></a>
+<a name="92"><span class="lineNum">      92 </span><span class="lineNoCov">          0 :                         fprintf(fd, &quot;%ld&quot;, (long)((int32 *) raw_data)[j]);</span></a>
+<a name="93"><span class="lineNum">      93 </span><span class="lineNoCov">          0 :                 else if(fip-&gt;field_type == TIFF_IFD)</span></a>
+<a name="94"><span class="lineNum">      94 </span><span class="lineNoCov">          0 :                         fprintf(fd, &quot;0x%lx&quot;,</span></a>
+<a name="95"><span class="lineNum">      95 </span><span class="lineNoCov">          0 :                                 (unsigned long)((uint32 *) raw_data)[j]);</span></a>
+<a name="96"><span class="lineNum">      96 </span><span class="lineNoCov">          0 :                 else if(fip-&gt;field_type == TIFF_RATIONAL</span></a>
+<a name="97"><span class="lineNum">      97 </span><span class="lineNoCov">          0 :                         || fip-&gt;field_type == TIFF_SRATIONAL</span></a>
+<a name="98"><span class="lineNum">      98 </span><span class="lineNoCov">          0 :                         || fip-&gt;field_type == TIFF_FLOAT)</span></a>
+<a name="99"><span class="lineNum">      99 </span><span class="lineNoCov">          0 :                         fprintf(fd, &quot;%f&quot;, ((float *) raw_data)[j]);</span></a>
+<a name="100"><span class="lineNum">     100 </span><span class="lineNoCov">          0 :                 else if(fip-&gt;field_type == TIFF_LONG8)</span></a>
+<a name="101"><span class="lineNum">     101 </span>            : #if defined(__WIN32__) &amp;&amp; (defined(_MSC_VER) || defined(__MINGW32__))</a>
+<a name="102"><span class="lineNum">     102 </span>            :                         fprintf(fd, &quot;%I64u&quot;,</a>
+<a name="103"><span class="lineNum">     103 </span>            :                             (unsigned __int64)((uint64 *) raw_data)[j]);</a>
+<a name="104"><span class="lineNum">     104 </span>            : #else</a>
+<a name="105"><span class="lineNum">     105 </span><span class="lineNoCov">          0 :                         fprintf(fd, &quot;%llu&quot;,</span></a>
+<a name="106"><span class="lineNum">     106 </span><span class="lineNoCov">          0 :                             (unsigned long long)((uint64 *) raw_data)[j]);</span></a>
+<a name="107"><span class="lineNum">     107 </span>            : #endif</a>
+<a name="108"><span class="lineNum">     108 </span><span class="lineNoCov">          0 :                 else if(fip-&gt;field_type == TIFF_SLONG8)</span></a>
+<a name="109"><span class="lineNum">     109 </span>            : #if defined(__WIN32__) &amp;&amp; (defined(_MSC_VER) || defined(__MINGW32__))</a>
+<a name="110"><span class="lineNum">     110 </span>            :                         fprintf(fd, &quot;%I64d&quot;, (__int64)((int64 *) raw_data)[j]);</a>
+<a name="111"><span class="lineNum">     111 </span>            : #else</a>
+<a name="112"><span class="lineNum">     112 </span><span class="lineNoCov">          0 :                         fprintf(fd, &quot;%lld&quot;, (long long)((int64 *) raw_data)[j]);</span></a>
+<a name="113"><span class="lineNum">     113 </span>            : #endif</a>
+<a name="114"><span class="lineNum">     114 </span><span class="lineNoCov">          0 :                 else if(fip-&gt;field_type == TIFF_IFD8)</span></a>
+<a name="115"><span class="lineNum">     115 </span>            : #if defined(__WIN32__) &amp;&amp; (defined(_MSC_VER) || defined(__MINGW32__))</a>
+<a name="116"><span class="lineNum">     116 </span>            :                         fprintf(fd, &quot;0x%I64x&quot;,</a>
+<a name="117"><span class="lineNum">     117 </span>            :                                 (unsigned __int64)((uint64 *) raw_data)[j]);</a>
+<a name="118"><span class="lineNum">     118 </span>            : #else</a>
+<a name="119"><span class="lineNum">     119 </span><span class="lineNoCov">          0 :                         fprintf(fd, &quot;0x%llx&quot;,</span></a>
+<a name="120"><span class="lineNum">     120 </span><span class="lineNoCov">          0 :                                 (unsigned long long)((uint64 *) raw_data)[j]);</span></a>
+<a name="121"><span class="lineNum">     121 </span>            : #endif</a>
+<a name="122"><span class="lineNum">     122 </span><span class="lineNoCov">          0 :                 else if(fip-&gt;field_type == TIFF_FLOAT)</span></a>
+<a name="123"><span class="lineNum">     123 </span><span class="lineNoCov">          0 :                         fprintf(fd, &quot;%f&quot;, ((float *)raw_data)[j]);</span></a>
+<a name="124"><span class="lineNum">     124 </span><span class="lineNoCov">          0 :                 else if(fip-&gt;field_type == TIFF_DOUBLE)</span></a>
+<a name="125"><span class="lineNum">     125 </span><span class="lineNoCov">          0 :                         fprintf(fd, &quot;%f&quot;, ((double *) raw_data)[j]);</span></a>
+<a name="126"><span class="lineNum">     126 </span><span class="lineNoCov">          0 :                 else if(fip-&gt;field_type == TIFF_ASCII) {</span></a>
+<a name="127"><span class="lineNum">     127 </span><span class="lineNoCov">          0 :                         fprintf(fd, &quot;%s&quot;, (char *) raw_data);</span></a>
+<a name="128"><span class="lineNum">     128 </span><span class="lineNoCov">          0 :                         break;</span></a>
+<a name="129"><span class="lineNum">     129 </span>            :                 }</a>
+<a name="130"><span class="lineNum">     130 </span>            :                 else {</a>
+<a name="131"><span class="lineNum">     131 </span><span class="lineNoCov">          0 :                         fprintf(fd, &quot;&lt;unsupported data type in TIFFPrint&gt;&quot;);</span></a>
+<a name="132"><span class="lineNum">     132 </span><span class="lineNoCov">          0 :                         break;</span></a>
+<a name="133"><span class="lineNum">     133 </span>            :                 }</a>
+<a name="134"><span class="lineNum">     134 </span>            : </a>
+<a name="135"><span class="lineNum">     135 </span><span class="lineNoCov">          0 :                 if(j &lt; value_count - 1)</span></a>
+<a name="136"><span class="lineNum">     136 </span><span class="lineNoCov">          0 :                         fprintf(fd, &quot;,&quot;);</span></a>
+<a name="137"><span class="lineNum">     137 </span>            :         }</a>
+<a name="138"><span class="lineNum">     138 </span>            : </a>
+<a name="139"><span class="lineNum">     139 </span><span class="lineNoCov">          0 :         fprintf(fd, &quot;\n&quot;);</span></a>
+<a name="140"><span class="lineNum">     140 </span><span class="lineNoCov">          0 : }</span></a>
+<a name="141"><span class="lineNum">     141 </span>            : </a>
+<a name="142"><span class="lineNum">     142 </span>            : static int</a>
+<a name="143"><span class="lineNum">     143 </span><span class="lineNoCov">          0 : _TIFFPrettyPrintField(TIFF* tif, const TIFFField *fip, FILE* fd, uint32 tag,</span></a>
+<a name="144"><span class="lineNum">     144 </span>            :                       uint32 value_count, void *raw_data)</a>
+<a name="145"><span class="lineNum">     145 </span>            : {</a>
+<a name="146"><span class="lineNum">     146 </span>            :         (void) tif;</a>
+<a name="147"><span class="lineNum">     147 </span>            : </a>
+<a name="148"><span class="lineNum">     148 </span>            :         /* do not try to pretty print auto-defined fields */</a>
+<a name="149"><span class="lineNum">     149 </span><span class="lineNoCov">          0 :         if (strncmp(fip-&gt;field_name,&quot;Tag &quot;, 4) == 0) {</span></a>
+<a name="150"><span class="lineNum">     150 </span><span class="lineNoCov">          0 :                 return 0;</span></a>
+<a name="151"><span class="lineNum">     151 </span>            :         }</a>
+<a name="152"><span class="lineNum">     152 </span>            :         </a>
+<a name="153"><span class="lineNum">     153 </span><span class="lineNoCov">          0 :         switch (tag)</span></a>
+<a name="154"><span class="lineNum">     154 </span>            :         {</a>
+<a name="155"><span class="lineNum">     155 </span><span class="lineNoCov">          0 :                 case TIFFTAG_INKSET:</span></a>
+<a name="156"><span class="lineNum">     156 </span><span class="lineNoCov">          0 :                         if (value_count == 2 &amp;&amp; fip-&gt;field_type == TIFF_SHORT) {</span></a>
+<a name="157"><span class="lineNum">     157 </span><span class="lineNoCov">          0 :                                 fprintf(fd, &quot;  Ink Set: &quot;);</span></a>
+<a name="158"><span class="lineNum">     158 </span><span class="lineNoCov">          0 :                                 switch (*((uint16*)raw_data)) {</span></a>
+<a name="159"><span class="lineNum">     159 </span><span class="lineNoCov">          0 :                                 case INKSET_CMYK:</span></a>
+<a name="160"><span class="lineNum">     160 </span><span class="lineNoCov">          0 :                                         fprintf(fd, &quot;CMYK\n&quot;);</span></a>
+<a name="161"><span class="lineNum">     161 </span><span class="lineNoCov">          0 :                                         break;</span></a>
+<a name="162"><span class="lineNum">     162 </span><span class="lineNoCov">          0 :                                 default:</span></a>
+<a name="163"><span class="lineNum">     163 </span><span class="lineNoCov">          0 :                                         fprintf(fd, &quot;%u (0x%x)\n&quot;,</span></a>
+<a name="164"><span class="lineNum">     164 </span><span class="lineNoCov">          0 :                                                 *((uint16*)raw_data),</span></a>
+<a name="165"><span class="lineNum">     165 </span><span class="lineNoCov">          0 :                                                 *((uint16*)raw_data));</span></a>
+<a name="166"><span class="lineNum">     166 </span><span class="lineNoCov">          0 :                                         break;</span></a>
+<a name="167"><span class="lineNum">     167 </span>            :                                 }</a>
+<a name="168"><span class="lineNum">     168 </span><span class="lineNoCov">          0 :                                 return 1;</span></a>
+<a name="169"><span class="lineNum">     169 </span>            :                         }</a>
+<a name="170"><span class="lineNum">     170 </span><span class="lineNoCov">          0 :                         return 0;</span></a>
+<a name="171"><span class="lineNum">     171 </span>            : </a>
+<a name="172"><span class="lineNum">     172 </span><span class="lineNoCov">          0 :                 case TIFFTAG_DOTRANGE:</span></a>
+<a name="173"><span class="lineNum">     173 </span><span class="lineNoCov">          0 :                         if (value_count == 2 &amp;&amp; fip-&gt;field_type == TIFF_SHORT) {</span></a>
+<a name="174"><span class="lineNum">     174 </span><span class="lineNoCov">          0 :                                 fprintf(fd, &quot;  Dot Range: %u-%u\n&quot;,</span></a>
+<a name="175"><span class="lineNum">     175 </span><span class="lineNoCov">          0 :                                         ((uint16*)raw_data)[0], ((uint16*)raw_data)[1]);</span></a>
+<a name="176"><span class="lineNum">     176 </span><span class="lineNoCov">          0 :                                 return 1;</span></a>
+<a name="177"><span class="lineNum">     177 </span>            :                         }</a>
+<a name="178"><span class="lineNum">     178 </span><span class="lineNoCov">          0 :                         return 0;</span></a>
+<a name="179"><span class="lineNum">     179 </span>            : </a>
+<a name="180"><span class="lineNum">     180 </span><span class="lineNoCov">          0 :                 case TIFFTAG_WHITEPOINT:</span></a>
+<a name="181"><span class="lineNum">     181 </span><span class="lineNoCov">          0 :                         if (value_count == 2 &amp;&amp; fip-&gt;field_type == TIFF_RATIONAL) {</span></a>
+<a name="182"><span class="lineNum">     182 </span><span class="lineNoCov">          0 :                                 fprintf(fd, &quot;  White Point: %g-%g\n&quot;,</span></a>
+<a name="183"><span class="lineNum">     183 </span><span class="lineNoCov">          0 :                                         ((float *)raw_data)[0], ((float *)raw_data)[1]);</span></a>
+<a name="184"><span class="lineNum">     184 </span><span class="lineNoCov">          0 :                                 return 1;</span></a>
+<a name="185"><span class="lineNum">     185 </span>            :                         } </a>
+<a name="186"><span class="lineNum">     186 </span><span class="lineNoCov">          0 :                         return 0;</span></a>
+<a name="187"><span class="lineNum">     187 </span>            : </a>
+<a name="188"><span class="lineNum">     188 </span><span class="lineNoCov">          0 :                 case TIFFTAG_XMLPACKET:</span></a>
+<a name="189"><span class="lineNum">     189 </span>            :                 {</a>
+<a name="190"><span class="lineNum">     190 </span>            :                         uint32 i;</a>
+<a name="191"><span class="lineNum">     191 </span>            : </a>
+<a name="192"><span class="lineNum">     192 </span><span class="lineNoCov">          0 :                         fprintf(fd, &quot;  XMLPacket (XMP Metadata):\n&quot; );</span></a>
+<a name="193"><span class="lineNum">     193 </span><span class="lineNoCov">          0 :                         for(i = 0; i &lt; value_count; i++)</span></a>
+<a name="194"><span class="lineNum">     194 </span><span class="lineNoCov">          0 :                                 fputc(((char *)raw_data)[i], fd);</span></a>
+<a name="195"><span class="lineNum">     195 </span><span class="lineNoCov">          0 :                         fprintf( fd, &quot;\n&quot; );</span></a>
+<a name="196"><span class="lineNum">     196 </span><span class="lineNoCov">          0 :                         return 1;</span></a>
+<a name="197"><span class="lineNum">     197 </span>            :                 }</a>
+<a name="198"><span class="lineNum">     198 </span><span class="lineNoCov">          0 :                 case TIFFTAG_RICHTIFFIPTC:</span></a>
+<a name="199"><span class="lineNum">     199 </span>            :                         /*</a>
+<a name="200"><span class="lineNum">     200 </span>            :                          * XXX: for some weird reason RichTIFFIPTC tag</a>
+<a name="201"><span class="lineNum">     201 </span>            :                          * defined as array of LONG values.</a>
+<a name="202"><span class="lineNum">     202 </span>            :                          */</a>
+<a name="203"><span class="lineNum">     203 </span><span class="lineNoCov">          0 :                         fprintf(fd,</span></a>
+<a name="204"><span class="lineNum">     204 </span>            :                             &quot;  RichTIFFIPTC Data: &lt;present&gt;, %lu bytes\n&quot;,</a>
+<a name="205"><span class="lineNum">     205 </span><span class="lineNoCov">          0 :                             (unsigned long) value_count * 4);</span></a>
+<a name="206"><span class="lineNum">     206 </span><span class="lineNoCov">          0 :                         return 1;</span></a>
+<a name="207"><span class="lineNum">     207 </span>            : </a>
+<a name="208"><span class="lineNum">     208 </span><span class="lineNoCov">          0 :                 case TIFFTAG_PHOTOSHOP:</span></a>
+<a name="209"><span class="lineNum">     209 </span><span class="lineNoCov">          0 :                         fprintf(fd, &quot;  Photoshop Data: &lt;present&gt;, %lu bytes\n&quot;,</span></a>
+<a name="210"><span class="lineNum">     210 </span>            :                             (unsigned long) value_count);</a>
+<a name="211"><span class="lineNum">     211 </span><span class="lineNoCov">          0 :                         return 1;</span></a>
+<a name="212"><span class="lineNum">     212 </span>            : </a>
+<a name="213"><span class="lineNum">     213 </span><span class="lineNoCov">          0 :                 case TIFFTAG_ICCPROFILE:</span></a>
+<a name="214"><span class="lineNum">     214 </span><span class="lineNoCov">          0 :                         fprintf(fd, &quot;  ICC Profile: &lt;present&gt;, %lu bytes\n&quot;,</span></a>
+<a name="215"><span class="lineNum">     215 </span>            :                             (unsigned long) value_count);</a>
+<a name="216"><span class="lineNum">     216 </span><span class="lineNoCov">          0 :                         return 1;</span></a>
+<a name="217"><span class="lineNum">     217 </span>            : </a>
+<a name="218"><span class="lineNum">     218 </span><span class="lineNoCov">          0 :                 case TIFFTAG_STONITS:</span></a>
+<a name="219"><span class="lineNum">     219 </span><span class="lineNoCov">          0 :                         if (value_count == 1 &amp;&amp; fip-&gt;field_type == TIFF_DOUBLE) { </span></a>
+<a name="220"><span class="lineNum">     220 </span><span class="lineNoCov">          0 :                                 fprintf(fd,</span></a>
+<a name="221"><span class="lineNum">     221 </span>            :                                         &quot;  Sample to Nits conversion factor: %.4e\n&quot;,</a>
+<a name="222"><span class="lineNum">     222 </span>            :                                         *((double*)raw_data));</a>
+<a name="223"><span class="lineNum">     223 </span><span class="lineNoCov">          0 :                                 return 1;</span></a>
+<a name="224"><span class="lineNum">     224 </span>            :                         }</a>
+<a name="225"><span class="lineNum">     225 </span><span class="lineNoCov">          0 :                         return 0;</span></a>
+<a name="226"><span class="lineNum">     226 </span>            :         }</a>
+<a name="227"><span class="lineNum">     227 </span>            : </a>
+<a name="228"><span class="lineNum">     228 </span><span class="lineNoCov">          0 :         return 0;</span></a>
+<a name="229"><span class="lineNum">     229 </span>            : }</a>
+<a name="230"><span class="lineNum">     230 </span>            : </a>
+<a name="231"><span class="lineNum">     231 </span>            : /*</a>
+<a name="232"><span class="lineNum">     232 </span>            :  * Print the contents of the current directory</a>
+<a name="233"><span class="lineNum">     233 </span>            :  * to the specified stdio file stream.</a>
+<a name="234"><span class="lineNum">     234 </span>            :  */</a>
+<a name="235"><span class="lineNum">     235 </span>            : void</a>
+<a name="236"><span class="lineNum">     236 </span><span class="lineCov">          1 : TIFFPrintDirectory(TIFF* tif, FILE* fd, long flags)</span></a>
+<a name="237"><span class="lineNum">     237 </span>            : {</a>
+<a name="238"><span class="lineNum">     238 </span><span class="lineCov">          1 :         TIFFDirectory *td = &amp;tif-&gt;tif_dir;</span></a>
+<a name="239"><span class="lineNum">     239 </span>            :         char *sep;</a>
+<a name="240"><span class="lineNum">     240 </span>            :         uint16 i;</a>
+<a name="241"><span class="lineNum">     241 </span>            :         long l, n;</a>
+<a name="242"><span class="lineNum">     242 </span>            : </a>
+<a name="243"><span class="lineNum">     243 </span>            : #if defined(__WIN32__) &amp;&amp; (defined(_MSC_VER) || defined(__MINGW32__))</a>
+<a name="244"><span class="lineNum">     244 </span>            :         fprintf(fd, &quot;TIFF Directory at offset 0x%I64x (%I64u)\n&quot;,</a>
+<a name="245"><span class="lineNum">     245 </span>            :                 (unsigned __int64) tif-&gt;tif_diroff,</a>
+<a name="246"><span class="lineNum">     246 </span>            :                 (unsigned __int64) tif-&gt;tif_diroff);</a>
+<a name="247"><span class="lineNum">     247 </span>            : #else</a>
+<a name="248"><span class="lineNum">     248 </span><span class="lineCov">          1 :         fprintf(fd, &quot;TIFF Directory at offset 0x%llx (%llu)\n&quot;,</span></a>
+<a name="249"><span class="lineNum">     249 </span><span class="lineCov">          1 :                 (unsigned long long) tif-&gt;tif_diroff,</span></a>
+<a name="250"><span class="lineNum">     250 </span><span class="lineCov">          1 :                 (unsigned long long) tif-&gt;tif_diroff);</span></a>
+<a name="251"><span class="lineNum">     251 </span>            : #endif</a>
+<a name="252"><span class="lineNum">     252 </span><span class="lineCov">          1 :         if (TIFFFieldSet(tif,FIELD_SUBFILETYPE)) {</span></a>
+<a name="253"><span class="lineNum">     253 </span><span class="lineNoCov">          0 :                 fprintf(fd, &quot;  Subfile Type:&quot;);</span></a>
+<a name="254"><span class="lineNum">     254 </span><span class="lineNoCov">          0 :                 sep = &quot; &quot;;</span></a>
+<a name="255"><span class="lineNum">     255 </span><span class="lineNoCov">          0 :                 if (td-&gt;td_subfiletype &amp; FILETYPE_REDUCEDIMAGE) {</span></a>
+<a name="256"><span class="lineNum">     256 </span><span class="lineNoCov">          0 :                         fprintf(fd, &quot;%sreduced-resolution image&quot;, sep);</span></a>
+<a name="257"><span class="lineNum">     257 </span><span class="lineNoCov">          0 :                         sep = &quot;/&quot;;</span></a>
+<a name="258"><span class="lineNum">     258 </span>            :                 }</a>
+<a name="259"><span class="lineNum">     259 </span><span class="lineNoCov">          0 :                 if (td-&gt;td_subfiletype &amp; FILETYPE_PAGE) {</span></a>
+<a name="260"><span class="lineNum">     260 </span><span class="lineNoCov">          0 :                         fprintf(fd, &quot;%smulti-page document&quot;, sep);</span></a>
+<a name="261"><span class="lineNum">     261 </span><span class="lineNoCov">          0 :                         sep = &quot;/&quot;;</span></a>
+<a name="262"><span class="lineNum">     262 </span>            :                 }</a>
+<a name="263"><span class="lineNum">     263 </span><span class="lineNoCov">          0 :                 if (td-&gt;td_subfiletype &amp; FILETYPE_MASK)</span></a>
+<a name="264"><span class="lineNum">     264 </span><span class="lineNoCov">          0 :                         fprintf(fd, &quot;%stransparency mask&quot;, sep);</span></a>
+<a name="265"><span class="lineNum">     265 </span><span class="lineNoCov">          0 :                 fprintf(fd, &quot; (%lu = 0x%lx)\n&quot;,</span></a>
+<a name="266"><span class="lineNum">     266 </span><span class="lineNoCov">          0 :                     (long) td-&gt;td_subfiletype, (long) td-&gt;td_subfiletype);</span></a>
+<a name="267"><span class="lineNum">     267 </span>            :         }</a>
+<a name="268"><span class="lineNum">     268 </span><span class="lineCov">          1 :         if (TIFFFieldSet(tif,FIELD_IMAGEDIMENSIONS)) {</span></a>
+<a name="269"><span class="lineNum">     269 </span><span class="lineCov">          1 :                 fprintf(fd, &quot;  Image Width: %lu Image Length: %lu&quot;,</span></a>
+<a name="270"><span class="lineNum">     270 </span><span class="lineCov">          1 :                     (unsigned long) td-&gt;td_imagewidth, (unsigned long) td-&gt;td_imagelength);</span></a>
+<a name="271"><span class="lineNum">     271 </span><span class="lineCov">          1 :                 if (TIFFFieldSet(tif,FIELD_IMAGEDEPTH))</span></a>
+<a name="272"><span class="lineNum">     272 </span><span class="lineNoCov">          0 :                         fprintf(fd, &quot; Image Depth: %lu&quot;,</span></a>
+<a name="273"><span class="lineNum">     273 </span><span class="lineNoCov">          0 :                             (unsigned long) td-&gt;td_imagedepth);</span></a>
+<a name="274"><span class="lineNum">     274 </span><span class="lineCov">          1 :                 fprintf(fd, &quot;\n&quot;);</span></a>
+<a name="275"><span class="lineNum">     275 </span>            :         }</a>
+<a name="276"><span class="lineNum">     276 </span><span class="lineCov">          1 :         if (TIFFFieldSet(tif,FIELD_TILEDIMENSIONS)) {</span></a>
+<a name="277"><span class="lineNum">     277 </span><span class="lineNoCov">          0 :                 fprintf(fd, &quot;  Tile Width: %lu Tile Length: %lu&quot;,</span></a>
+<a name="278"><span class="lineNum">     278 </span><span class="lineNoCov">          0 :                     (unsigned long) td-&gt;td_tilewidth, (unsigned long) td-&gt;td_tilelength);</span></a>
+<a name="279"><span class="lineNum">     279 </span><span class="lineNoCov">          0 :                 if (TIFFFieldSet(tif,FIELD_TILEDEPTH))</span></a>
+<a name="280"><span class="lineNum">     280 </span><span class="lineNoCov">          0 :                         fprintf(fd, &quot; Tile Depth: %lu&quot;,</span></a>
+<a name="281"><span class="lineNum">     281 </span><span class="lineNoCov">          0 :                             (unsigned long) td-&gt;td_tiledepth);</span></a>
+<a name="282"><span class="lineNum">     282 </span><span class="lineNoCov">          0 :                 fprintf(fd, &quot;\n&quot;);</span></a>
+<a name="283"><span class="lineNum">     283 </span>            :         }</a>
+<a name="284"><span class="lineNum">     284 </span><span class="lineCov">          1 :         if (TIFFFieldSet(tif,FIELD_RESOLUTION)) {</span></a>
+<a name="285"><span class="lineNum">     285 </span><span class="lineNoCov">          0 :                 fprintf(fd, &quot;  Resolution: %g, %g&quot;,</span></a>
+<a name="286"><span class="lineNum">     286 </span><span class="lineNoCov">          0 :                     td-&gt;td_xresolution, td-&gt;td_yresolution);</span></a>
+<a name="287"><span class="lineNum">     287 </span><span class="lineNoCov">          0 :                 if (TIFFFieldSet(tif,FIELD_RESOLUTIONUNIT)) {</span></a>
+<a name="288"><span class="lineNum">     288 </span><span class="lineNoCov">          0 :                         switch (td-&gt;td_resolutionunit) {</span></a>
+<a name="289"><span class="lineNum">     289 </span><span class="lineNoCov">          0 :                         case RESUNIT_NONE:</span></a>
+<a name="290"><span class="lineNum">     290 </span><span class="lineNoCov">          0 :                                 fprintf(fd, &quot; (unitless)&quot;);</span></a>
+<a name="291"><span class="lineNum">     291 </span><span class="lineNoCov">          0 :                                 break;</span></a>
+<a name="292"><span class="lineNum">     292 </span><span class="lineNoCov">          0 :                         case RESUNIT_INCH:</span></a>
+<a name="293"><span class="lineNum">     293 </span><span class="lineNoCov">          0 :                                 fprintf(fd, &quot; pixels/inch&quot;);</span></a>
+<a name="294"><span class="lineNum">     294 </span><span class="lineNoCov">          0 :                                 break;</span></a>
+<a name="295"><span class="lineNum">     295 </span><span class="lineNoCov">          0 :                         case RESUNIT_CENTIMETER:</span></a>
+<a name="296"><span class="lineNum">     296 </span><span class="lineNoCov">          0 :                                 fprintf(fd, &quot; pixels/cm&quot;);</span></a>
+<a name="297"><span class="lineNum">     297 </span><span class="lineNoCov">          0 :                                 break;</span></a>
+<a name="298"><span class="lineNum">     298 </span><span class="lineNoCov">          0 :                         default:</span></a>
+<a name="299"><span class="lineNum">     299 </span><span class="lineNoCov">          0 :                                 fprintf(fd, &quot; (unit %u = 0x%x)&quot;,</span></a>
+<a name="300"><span class="lineNum">     300 </span><span class="lineNoCov">          0 :                                     td-&gt;td_resolutionunit,</span></a>
+<a name="301"><span class="lineNum">     301 </span><span class="lineNoCov">          0 :                                     td-&gt;td_resolutionunit);</span></a>
+<a name="302"><span class="lineNum">     302 </span><span class="lineNoCov">          0 :                                 break;</span></a>
+<a name="303"><span class="lineNum">     303 </span>            :                         }</a>
+<a name="304"><span class="lineNum">     304 </span><span class="lineNoCov">          0 :                 }</span></a>
+<a name="305"><span class="lineNum">     305 </span><span class="lineNoCov">          0 :                 fprintf(fd, &quot;\n&quot;);</span></a>
+<a name="306"><span class="lineNum">     306 </span>            :         }</a>
+<a name="307"><span class="lineNum">     307 </span><span class="lineCov">          1 :         if (TIFFFieldSet(tif,FIELD_POSITION))</span></a>
+<a name="308"><span class="lineNum">     308 </span><span class="lineNoCov">          0 :                 fprintf(fd, &quot;  Position: %g, %g\n&quot;,</span></a>
+<a name="309"><span class="lineNum">     309 </span><span class="lineNoCov">          0 :                     td-&gt;td_xposition, td-&gt;td_yposition);</span></a>
+<a name="310"><span class="lineNum">     310 </span><span class="lineCov">          1 :         if (TIFFFieldSet(tif,FIELD_BITSPERSAMPLE))</span></a>
+<a name="311"><span class="lineNum">     311 </span><span class="lineCov">          1 :                 fprintf(fd, &quot;  Bits/Sample: %u\n&quot;, td-&gt;td_bitspersample);</span></a>
+<a name="312"><span class="lineNum">     312 </span><span class="lineCov">          1 :         if (TIFFFieldSet(tif,FIELD_SAMPLEFORMAT)) {</span></a>
+<a name="313"><span class="lineNum">     313 </span><span class="lineCov">          1 :                 fprintf(fd, &quot;  Sample Format: &quot;);</span></a>
+<a name="314"><span class="lineNum">     314 </span><span class="lineCov">          1 :                 switch (td-&gt;td_sampleformat) {</span></a>
+<a name="315"><span class="lineNum">     315 </span><span class="lineNoCov">          0 :                 case SAMPLEFORMAT_VOID:</span></a>
+<a name="316"><span class="lineNum">     316 </span><span class="lineNoCov">          0 :                         fprintf(fd, &quot;void\n&quot;);</span></a>
+<a name="317"><span class="lineNum">     317 </span><span class="lineNoCov">          0 :                         break;</span></a>
+<a name="318"><span class="lineNum">     318 </span><span class="lineCov">          1 :                 case SAMPLEFORMAT_INT:</span></a>
+<a name="319"><span class="lineNum">     319 </span><span class="lineCov">          1 :                         fprintf(fd, &quot;signed integer\n&quot;);</span></a>
+<a name="320"><span class="lineNum">     320 </span><span class="lineCov">          1 :                         break;</span></a>
+<a name="321"><span class="lineNum">     321 </span><span class="lineNoCov">          0 :                 case SAMPLEFORMAT_UINT:</span></a>
+<a name="322"><span class="lineNum">     322 </span><span class="lineNoCov">          0 :                         fprintf(fd, &quot;unsigned integer\n&quot;);</span></a>
+<a name="323"><span class="lineNum">     323 </span><span class="lineNoCov">          0 :                         break;</span></a>
+<a name="324"><span class="lineNum">     324 </span><span class="lineNoCov">          0 :                 case SAMPLEFORMAT_IEEEFP:</span></a>
+<a name="325"><span class="lineNum">     325 </span><span class="lineNoCov">          0 :                         fprintf(fd, &quot;IEEE floating point\n&quot;);</span></a>
+<a name="326"><span class="lineNum">     326 </span><span class="lineNoCov">          0 :                         break;</span></a>
+<a name="327"><span class="lineNum">     327 </span><span class="lineNoCov">          0 :                 case SAMPLEFORMAT_COMPLEXINT:</span></a>
+<a name="328"><span class="lineNum">     328 </span><span class="lineNoCov">          0 :                         fprintf(fd, &quot;complex signed integer\n&quot;);</span></a>
+<a name="329"><span class="lineNum">     329 </span><span class="lineNoCov">          0 :                         break;</span></a>
+<a name="330"><span class="lineNum">     330 </span><span class="lineNoCov">          0 :                 case SAMPLEFORMAT_COMPLEXIEEEFP:</span></a>
+<a name="331"><span class="lineNum">     331 </span><span class="lineNoCov">          0 :                         fprintf(fd, &quot;complex IEEE floating point\n&quot;);</span></a>
+<a name="332"><span class="lineNum">     332 </span><span class="lineNoCov">          0 :                         break;</span></a>
+<a name="333"><span class="lineNum">     333 </span><span class="lineNoCov">          0 :                 default:</span></a>
+<a name="334"><span class="lineNum">     334 </span><span class="lineNoCov">          0 :                         fprintf(fd, &quot;%u (0x%x)\n&quot;,</span></a>
+<a name="335"><span class="lineNum">     335 </span><span class="lineNoCov">          0 :                             td-&gt;td_sampleformat, td-&gt;td_sampleformat);</span></a>
+<a name="336"><span class="lineNum">     336 </span><span class="lineNoCov">          0 :                         break;</span></a>
+<a name="337"><span class="lineNum">     337 </span>            :                 }</a>
+<a name="338"><span class="lineNum">     338 </span><span class="lineNoCov">          0 :         }</span></a>
+<a name="339"><span class="lineNum">     339 </span><span class="lineCov">          1 :         if (TIFFFieldSet(tif,FIELD_COMPRESSION)) {</span></a>
+<a name="340"><span class="lineNum">     340 </span><span class="lineCov">          1 :                 const TIFFCodec* c = TIFFFindCODEC(td-&gt;td_compression);</span></a>
+<a name="341"><span class="lineNum">     341 </span><span class="lineCov">          1 :                 fprintf(fd, &quot;  Compression Scheme: &quot;);</span></a>
+<a name="342"><span class="lineNum">     342 </span><span class="lineCov">          1 :                 if (c)</span></a>
+<a name="343"><span class="lineNum">     343 </span><span class="lineCov">          1 :                         fprintf(fd, &quot;%s\n&quot;, c-&gt;name);</span></a>
+<a name="344"><span class="lineNum">     344 </span>            :                 else</a>
+<a name="345"><span class="lineNum">     345 </span><span class="lineNoCov">          0 :                         fprintf(fd, &quot;%u (0x%x)\n&quot;,</span></a>
+<a name="346"><span class="lineNum">     346 </span><span class="lineNoCov">          0 :                             td-&gt;td_compression, td-&gt;td_compression);</span></a>
+<a name="347"><span class="lineNum">     347 </span>            :         }</a>
+<a name="348"><span class="lineNum">     348 </span><span class="lineCov">          1 :         if (TIFFFieldSet(tif,FIELD_PHOTOMETRIC)) {</span></a>
+<a name="349"><span class="lineNum">     349 </span><span class="lineCov">          1 :                 fprintf(fd, &quot;  Photometric Interpretation: &quot;);</span></a>
+<a name="350"><span class="lineNum">     350 </span><span class="lineCov">          1 :                 if (td-&gt;td_photometric &lt; NPHOTONAMES)</span></a>
+<a name="351"><span class="lineNum">     351 </span><span class="lineNoCov">          0 :                         fprintf(fd, &quot;%s\n&quot;, photoNames[td-&gt;td_photometric]);</span></a>
+<a name="352"><span class="lineNum">     352 </span>            :                 else {</a>
+<a name="353"><span class="lineNum">     353 </span><span class="lineCov">          1 :                         switch (td-&gt;td_photometric) {</span></a>
+<a name="354"><span class="lineNum">     354 </span><span class="lineNoCov">          0 :                         case PHOTOMETRIC_LOGL:</span></a>
+<a name="355"><span class="lineNum">     355 </span><span class="lineNoCov">          0 :                                 fprintf(fd, &quot;CIE Log2(L)\n&quot;);</span></a>
+<a name="356"><span class="lineNum">     356 </span><span class="lineNoCov">          0 :                                 break;</span></a>
+<a name="357"><span class="lineNum">     357 </span><span class="lineCov">          1 :                         case PHOTOMETRIC_LOGLUV:</span></a>
+<a name="358"><span class="lineNum">     358 </span><span class="lineCov">          1 :                                 fprintf(fd, &quot;CIE Log2(L) (u',v')\n&quot;);</span></a>
+<a name="359"><span class="lineNum">     359 </span><span class="lineCov">          1 :                                 break;</span></a>
+<a name="360"><span class="lineNum">     360 </span><span class="lineNoCov">          0 :                         default:</span></a>
+<a name="361"><span class="lineNum">     361 </span><span class="lineNoCov">          0 :                                 fprintf(fd, &quot;%u (0x%x)\n&quot;,</span></a>
+<a name="362"><span class="lineNum">     362 </span><span class="lineNoCov">          0 :                                     td-&gt;td_photometric, td-&gt;td_photometric);</span></a>
+<a name="363"><span class="lineNum">     363 </span><span class="lineNoCov">          0 :                                 break;</span></a>
+<a name="364"><span class="lineNum">     364 </span>            :                         }</a>
+<a name="365"><span class="lineNum">     365 </span><span class="lineNoCov">          0 :                 }</span></a>
+<a name="366"><span class="lineNum">     366 </span>            :         }</a>
+<a name="367"><span class="lineNum">     367 </span><span class="lineCov">          1 :         if (TIFFFieldSet(tif,FIELD_EXTRASAMPLES) &amp;&amp; td-&gt;td_extrasamples) {</span></a>
+<a name="368"><span class="lineNum">     368 </span><span class="lineNoCov">          0 :                 fprintf(fd, &quot;  Extra Samples: %u&lt;&quot;, td-&gt;td_extrasamples);</span></a>
+<a name="369"><span class="lineNum">     369 </span><span class="lineNoCov">          0 :                 sep = &quot;&quot;;</span></a>
+<a name="370"><span class="lineNum">     370 </span><span class="lineNoCov">          0 :                 for (i = 0; i &lt; td-&gt;td_extrasamples; i++) {</span></a>
+<a name="371"><span class="lineNum">     371 </span><span class="lineNoCov">          0 :                         switch (td-&gt;td_sampleinfo[i]) {</span></a>
+<a name="372"><span class="lineNum">     372 </span><span class="lineNoCov">          0 :                         case EXTRASAMPLE_UNSPECIFIED:</span></a>
+<a name="373"><span class="lineNum">     373 </span><span class="lineNoCov">          0 :                                 fprintf(fd, &quot;%sunspecified&quot;, sep);</span></a>
+<a name="374"><span class="lineNum">     374 </span><span class="lineNoCov">          0 :                                 break;</span></a>
+<a name="375"><span class="lineNum">     375 </span><span class="lineNoCov">          0 :                         case EXTRASAMPLE_ASSOCALPHA:</span></a>
+<a name="376"><span class="lineNum">     376 </span><span class="lineNoCov">          0 :                                 fprintf(fd, &quot;%sassoc-alpha&quot;, sep);</span></a>
+<a name="377"><span class="lineNum">     377 </span><span class="lineNoCov">          0 :                                 break;</span></a>
+<a name="378"><span class="lineNum">     378 </span><span class="lineNoCov">          0 :                         case EXTRASAMPLE_UNASSALPHA:</span></a>
+<a name="379"><span class="lineNum">     379 </span><span class="lineNoCov">          0 :                                 fprintf(fd, &quot;%sunassoc-alpha&quot;, sep);</span></a>
+<a name="380"><span class="lineNum">     380 </span><span class="lineNoCov">          0 :                                 break;</span></a>
+<a name="381"><span class="lineNum">     381 </span><span class="lineNoCov">          0 :                         default:</span></a>
+<a name="382"><span class="lineNum">     382 </span><span class="lineNoCov">          0 :                                 fprintf(fd, &quot;%s%u (0x%x)&quot;, sep,</span></a>
+<a name="383"><span class="lineNum">     383 </span><span class="lineNoCov">          0 :                                     td-&gt;td_sampleinfo[i], td-&gt;td_sampleinfo[i]);</span></a>
+<a name="384"><span class="lineNum">     384 </span><span class="lineNoCov">          0 :                                 break;</span></a>
+<a name="385"><span class="lineNum">     385 </span>            :                         }</a>
+<a name="386"><span class="lineNum">     386 </span><span class="lineNoCov">          0 :                         sep = &quot;, &quot;;</span></a>
+<a name="387"><span class="lineNum">     387 </span>            :                 }</a>
+<a name="388"><span class="lineNum">     388 </span><span class="lineNoCov">          0 :                 fprintf(fd, &quot;&gt;\n&quot;);</span></a>
+<a name="389"><span class="lineNum">     389 </span>            :         }</a>
+<a name="390"><span class="lineNum">     390 </span><span class="lineCov">          1 :         if (TIFFFieldSet(tif,FIELD_INKNAMES)) {</span></a>
+<a name="391"><span class="lineNum">     391 </span>            :                 char* cp;</a>
+<a name="392"><span class="lineNum">     392 </span><span class="lineNoCov">          0 :                 fprintf(fd, &quot;  Ink Names: &quot;);</span></a>
+<a name="393"><span class="lineNum">     393 </span><span class="lineNoCov">          0 :                 i = td-&gt;td_samplesperpixel;</span></a>
+<a name="394"><span class="lineNum">     394 </span><span class="lineNoCov">          0 :                 sep = &quot;&quot;;</span></a>
+<a name="395"><span class="lineNum">     395 </span><span class="lineNoCov">          0 :                 for (cp = td-&gt;td_inknames; </span></a>
+<a name="396"><span class="lineNum">     396 </span><span class="lineNoCov">          0 :                      i &gt; 0 &amp;&amp; cp &lt; td-&gt;td_inknames + td-&gt;td_inknameslen; </span></a>
+<a name="397"><span class="lineNum">     397 </span><span class="lineNoCov">          0 :                      cp = strchr(cp,'\0')+1, i--) {</span></a>
+<a name="398"><span class="lineNum">     398 </span><span class="lineNoCov">          0 :                         int max_chars = </span></a>
+<a name="399"><span class="lineNum">     399 </span><span class="lineNoCov">          0 :                                 td-&gt;td_inknameslen - (cp - td-&gt;td_inknames);</span></a>
+<a name="400"><span class="lineNum">     400 </span><span class="lineNoCov">          0 :                         fputs(sep, fd);</span></a>
+<a name="401"><span class="lineNum">     401 </span><span class="lineNoCov">          0 :                         _TIFFprintAsciiBounded(fd, cp, max_chars);</span></a>
+<a name="402"><span class="lineNum">     402 </span><span class="lineNoCov">          0 :                         sep = &quot;, &quot;;</span></a>
+<a name="403"><span class="lineNum">     403 </span>            :                 }</a>
+<a name="404"><span class="lineNum">     404 </span><span class="lineNoCov">          0 :                 fputs(&quot;\n&quot;, fd);</span></a>
+<a name="405"><span class="lineNum">     405 </span>            :         }</a>
+<a name="406"><span class="lineNum">     406 </span><span class="lineCov">          1 :         if (TIFFFieldSet(tif,FIELD_THRESHHOLDING)) {</span></a>
+<a name="407"><span class="lineNum">     407 </span><span class="lineNoCov">          0 :                 fprintf(fd, &quot;  Thresholding: &quot;);</span></a>
+<a name="408"><span class="lineNum">     408 </span><span class="lineNoCov">          0 :                 switch (td-&gt;td_threshholding) {</span></a>
+<a name="409"><span class="lineNum">     409 </span><span class="lineNoCov">          0 :                 case THRESHHOLD_BILEVEL:</span></a>
+<a name="410"><span class="lineNum">     410 </span><span class="lineNoCov">          0 :                         fprintf(fd, &quot;bilevel art scan\n&quot;);</span></a>
+<a name="411"><span class="lineNum">     411 </span><span class="lineNoCov">          0 :                         break;</span></a>
+<a name="412"><span class="lineNum">     412 </span><span class="lineNoCov">          0 :                 case THRESHHOLD_HALFTONE:</span></a>
+<a name="413"><span class="lineNum">     413 </span><span class="lineNoCov">          0 :                         fprintf(fd, &quot;halftone or dithered scan\n&quot;);</span></a>
+<a name="414"><span class="lineNum">     414 </span><span class="lineNoCov">          0 :                         break;</span></a>
+<a name="415"><span class="lineNum">     415 </span><span class="lineNoCov">          0 :                 case THRESHHOLD_ERRORDIFFUSE:</span></a>
+<a name="416"><span class="lineNum">     416 </span><span class="lineNoCov">          0 :                         fprintf(fd, &quot;error diffused\n&quot;);</span></a>
+<a name="417"><span class="lineNum">     417 </span><span class="lineNoCov">          0 :                         break;</span></a>
+<a name="418"><span class="lineNum">     418 </span><span class="lineNoCov">          0 :                 default:</span></a>
+<a name="419"><span class="lineNum">     419 </span><span class="lineNoCov">          0 :                         fprintf(fd, &quot;%u (0x%x)\n&quot;,</span></a>
+<a name="420"><span class="lineNum">     420 </span><span class="lineNoCov">          0 :                             td-&gt;td_threshholding, td-&gt;td_threshholding);</span></a>
+<a name="421"><span class="lineNum">     421 </span><span class="lineNoCov">          0 :                         break;</span></a>
+<a name="422"><span class="lineNum">     422 </span>            :                 }</a>
+<a name="423"><span class="lineNum">     423 </span><span class="lineCov">          1 :         }</span></a>
+<a name="424"><span class="lineNum">     424 </span><span class="lineCov">          1 :         if (TIFFFieldSet(tif,FIELD_FILLORDER)) {</span></a>
+<a name="425"><span class="lineNum">     425 </span><span class="lineNoCov">          0 :                 fprintf(fd, &quot;  FillOrder: &quot;);</span></a>
+<a name="426"><span class="lineNum">     426 </span><span class="lineNoCov">          0 :                 switch (td-&gt;td_fillorder) {</span></a>
+<a name="427"><span class="lineNum">     427 </span><span class="lineNoCov">          0 :                 case FILLORDER_MSB2LSB:</span></a>
+<a name="428"><span class="lineNum">     428 </span><span class="lineNoCov">          0 :                         fprintf(fd, &quot;msb-to-lsb\n&quot;);</span></a>
+<a name="429"><span class="lineNum">     429 </span><span class="lineNoCov">          0 :                         break;</span></a>
+<a name="430"><span class="lineNum">     430 </span><span class="lineNoCov">          0 :                 case FILLORDER_LSB2MSB:</span></a>
+<a name="431"><span class="lineNum">     431 </span><span class="lineNoCov">          0 :                         fprintf(fd, &quot;lsb-to-msb\n&quot;);</span></a>
+<a name="432"><span class="lineNum">     432 </span><span class="lineNoCov">          0 :                         break;</span></a>
+<a name="433"><span class="lineNum">     433 </span><span class="lineNoCov">          0 :                 default:</span></a>
+<a name="434"><span class="lineNum">     434 </span><span class="lineNoCov">          0 :                         fprintf(fd, &quot;%u (0x%x)\n&quot;,</span></a>
+<a name="435"><span class="lineNum">     435 </span><span class="lineNoCov">          0 :                             td-&gt;td_fillorder, td-&gt;td_fillorder);</span></a>
+<a name="436"><span class="lineNum">     436 </span><span class="lineNoCov">          0 :                         break;</span></a>
+<a name="437"><span class="lineNum">     437 </span>            :                 }</a>
+<a name="438"><span class="lineNum">     438 </span><span class="lineCov">          1 :         }</span></a>
+<a name="439"><span class="lineNum">     439 </span><span class="lineCov">          1 :         if (TIFFFieldSet(tif,FIELD_YCBCRSUBSAMPLING))</span></a>
+<a name="440"><span class="lineNum">     440 </span>            :         {</a>
+<a name="441"><span class="lineNum">     441 </span><span class="lineNoCov">          0 :                 fprintf(fd, &quot;  YCbCr Subsampling: %u, %u\n&quot;,</span></a>
+<a name="442"><span class="lineNum">     442 </span><span class="lineNoCov">          0 :                         td-&gt;td_ycbcrsubsampling[0], td-&gt;td_ycbcrsubsampling[1] );</span></a>
+<a name="443"><span class="lineNum">     443 </span>            :         }</a>
+<a name="444"><span class="lineNum">     444 </span><span class="lineCov">          1 :         if (TIFFFieldSet(tif,FIELD_YCBCRPOSITIONING)) {</span></a>
+<a name="445"><span class="lineNum">     445 </span><span class="lineNoCov">          0 :                 fprintf(fd, &quot;  YCbCr Positioning: &quot;);</span></a>
+<a name="446"><span class="lineNum">     446 </span><span class="lineNoCov">          0 :                 switch (td-&gt;td_ycbcrpositioning) {</span></a>
+<a name="447"><span class="lineNum">     447 </span><span class="lineNoCov">          0 :                 case YCBCRPOSITION_CENTERED:</span></a>
+<a name="448"><span class="lineNum">     448 </span><span class="lineNoCov">          0 :                         fprintf(fd, &quot;centered\n&quot;);</span></a>
+<a name="449"><span class="lineNum">     449 </span><span class="lineNoCov">          0 :                         break;</span></a>
+<a name="450"><span class="lineNum">     450 </span><span class="lineNoCov">          0 :                 case YCBCRPOSITION_COSITED:</span></a>
+<a name="451"><span class="lineNum">     451 </span><span class="lineNoCov">          0 :                         fprintf(fd, &quot;cosited\n&quot;);</span></a>
+<a name="452"><span class="lineNum">     452 </span><span class="lineNoCov">          0 :                         break;</span></a>
+<a name="453"><span class="lineNum">     453 </span><span class="lineNoCov">          0 :                 default:</span></a>
+<a name="454"><span class="lineNum">     454 </span><span class="lineNoCov">          0 :                         fprintf(fd, &quot;%u (0x%x)\n&quot;,</span></a>
+<a name="455"><span class="lineNum">     455 </span><span class="lineNoCov">          0 :                             td-&gt;td_ycbcrpositioning, td-&gt;td_ycbcrpositioning);</span></a>
+<a name="456"><span class="lineNum">     456 </span><span class="lineNoCov">          0 :                         break;</span></a>
+<a name="457"><span class="lineNum">     457 </span>            :                 }</a>
+<a name="458"><span class="lineNum">     458 </span><span class="lineCov">          1 :         }</span></a>
+<a name="459"><span class="lineNum">     459 </span><span class="lineCov">          1 :         if (TIFFFieldSet(tif,FIELD_HALFTONEHINTS))</span></a>
+<a name="460"><span class="lineNum">     460 </span><span class="lineNoCov">          0 :                 fprintf(fd, &quot;  Halftone Hints: light %u dark %u\n&quot;,</span></a>
+<a name="461"><span class="lineNum">     461 </span><span class="lineNoCov">          0 :                     td-&gt;td_halftonehints[0], td-&gt;td_halftonehints[1]);</span></a>
+<a name="462"><span class="lineNum">     462 </span><span class="lineCov">          1 :         if (TIFFFieldSet(tif,FIELD_ORIENTATION)) {</span></a>
+<a name="463"><span class="lineNum">     463 </span><span class="lineNoCov">          0 :                 fprintf(fd, &quot;  Orientation: &quot;);</span></a>
+<a name="464"><span class="lineNum">     464 </span><span class="lineNoCov">          0 :                 if (td-&gt;td_orientation &lt; NORIENTNAMES)</span></a>
+<a name="465"><span class="lineNum">     465 </span><span class="lineNoCov">          0 :                         fprintf(fd, &quot;%s\n&quot;, orientNames[td-&gt;td_orientation]);</span></a>
+<a name="466"><span class="lineNum">     466 </span>            :                 else</a>
+<a name="467"><span class="lineNum">     467 </span><span class="lineNoCov">          0 :                         fprintf(fd, &quot;%u (0x%x)\n&quot;,</span></a>
+<a name="468"><span class="lineNum">     468 </span><span class="lineNoCov">          0 :                             td-&gt;td_orientation, td-&gt;td_orientation);</span></a>
+<a name="469"><span class="lineNum">     469 </span>            :         }</a>
+<a name="470"><span class="lineNum">     470 </span><span class="lineCov">          1 :         if (TIFFFieldSet(tif,FIELD_SAMPLESPERPIXEL))</span></a>
+<a name="471"><span class="lineNum">     471 </span><span class="lineCov">          1 :                 fprintf(fd, &quot;  Samples/Pixel: %u\n&quot;, td-&gt;td_samplesperpixel);</span></a>
+<a name="472"><span class="lineNum">     472 </span><span class="lineCov">          1 :         if (TIFFFieldSet(tif,FIELD_ROWSPERSTRIP)) {</span></a>
+<a name="473"><span class="lineNum">     473 </span><span class="lineCov">          1 :                 fprintf(fd, &quot;  Rows/Strip: &quot;);</span></a>
+<a name="474"><span class="lineNum">     474 </span><span class="lineCov">          1 :                 if (td-&gt;td_rowsperstrip == (uint32) -1)</span></a>
+<a name="475"><span class="lineNum">     475 </span><span class="lineNoCov">          0 :                         fprintf(fd, &quot;(infinite)\n&quot;);</span></a>
+<a name="476"><span class="lineNum">     476 </span>            :                 else</a>
+<a name="477"><span class="lineNum">     477 </span><span class="lineCov">          1 :                         fprintf(fd, &quot;%lu\n&quot;, (unsigned long) td-&gt;td_rowsperstrip);</span></a>
+<a name="478"><span class="lineNum">     478 </span>            :         }</a>
+<a name="479"><span class="lineNum">     479 </span><span class="lineCov">          1 :         if (TIFFFieldSet(tif,FIELD_MINSAMPLEVALUE))</span></a>
+<a name="480"><span class="lineNum">     480 </span><span class="lineNoCov">          0 :                 fprintf(fd, &quot;  Min Sample Value: %u\n&quot;, td-&gt;td_minsamplevalue);</span></a>
+<a name="481"><span class="lineNum">     481 </span><span class="lineCov">          1 :         if (TIFFFieldSet(tif,FIELD_MAXSAMPLEVALUE))</span></a>
+<a name="482"><span class="lineNum">     482 </span><span class="lineNoCov">          0 :                 fprintf(fd, &quot;  Max Sample Value: %u\n&quot;, td-&gt;td_maxsamplevalue);</span></a>
+<a name="483"><span class="lineNum">     483 </span><span class="lineCov">          1 :         if (TIFFFieldSet(tif,FIELD_SMINSAMPLEVALUE)) {</span></a>
+<a name="484"><span class="lineNum">     484 </span><span class="lineNoCov">          0 :                 int count = (tif-&gt;tif_flags &amp; TIFF_PERSAMPLE) ? td-&gt;td_samplesperpixel : 1;</span></a>
+<a name="485"><span class="lineNum">     485 </span><span class="lineNoCov">          0 :                 fprintf(fd, &quot;  SMin Sample Value:&quot;);</span></a>
+<a name="486"><span class="lineNum">     486 </span><span class="lineNoCov">          0 :                 for (i = 0; i &lt; count; ++i)</span></a>
+<a name="487"><span class="lineNum">     487 </span><span class="lineNoCov">          0 :                         fprintf(fd, &quot; %g&quot;, td-&gt;td_sminsamplevalue[i]);</span></a>
+<a name="488"><span class="lineNum">     488 </span><span class="lineNoCov">          0 :                 fprintf(fd, &quot;\n&quot;);</span></a>
+<a name="489"><span class="lineNum">     489 </span>            :         }</a>
+<a name="490"><span class="lineNum">     490 </span><span class="lineCov">          1 :         if (TIFFFieldSet(tif,FIELD_SMAXSAMPLEVALUE)) {</span></a>
+<a name="491"><span class="lineNum">     491 </span><span class="lineNoCov">          0 :                 int count = (tif-&gt;tif_flags &amp; TIFF_PERSAMPLE) ? td-&gt;td_samplesperpixel : 1;</span></a>
+<a name="492"><span class="lineNum">     492 </span><span class="lineNoCov">          0 :                 fprintf(fd, &quot;  SMax Sample Value:&quot;);</span></a>
+<a name="493"><span class="lineNum">     493 </span><span class="lineNoCov">          0 :                 for (i = 0; i &lt; count; ++i)</span></a>
+<a name="494"><span class="lineNum">     494 </span><span class="lineNoCov">          0 :                         fprintf(fd, &quot; %g&quot;, td-&gt;td_smaxsamplevalue[i]);</span></a>
+<a name="495"><span class="lineNum">     495 </span><span class="lineNoCov">          0 :                 fprintf(fd, &quot;\n&quot;);</span></a>
+<a name="496"><span class="lineNum">     496 </span>            :         }</a>
+<a name="497"><span class="lineNum">     497 </span><span class="lineCov">          1 :         if (TIFFFieldSet(tif,FIELD_PLANARCONFIG)) {</span></a>
+<a name="498"><span class="lineNum">     498 </span><span class="lineCov">          1 :                 fprintf(fd, &quot;  Planar Configuration: &quot;);</span></a>
+<a name="499"><span class="lineNum">     499 </span><span class="lineCov">          1 :                 switch (td-&gt;td_planarconfig) {</span></a>
+<a name="500"><span class="lineNum">     500 </span><span class="lineCov">          1 :                 case PLANARCONFIG_CONTIG:</span></a>
+<a name="501"><span class="lineNum">     501 </span><span class="lineCov">          1 :                         fprintf(fd, &quot;single image plane\n&quot;);</span></a>
+<a name="502"><span class="lineNum">     502 </span><span class="lineCov">          1 :                         break;</span></a>
+<a name="503"><span class="lineNum">     503 </span><span class="lineNoCov">          0 :                 case PLANARCONFIG_SEPARATE:</span></a>
+<a name="504"><span class="lineNum">     504 </span><span class="lineNoCov">          0 :                         fprintf(fd, &quot;separate image planes\n&quot;);</span></a>
+<a name="505"><span class="lineNum">     505 </span><span class="lineNoCov">          0 :                         break;</span></a>
+<a name="506"><span class="lineNum">     506 </span><span class="lineNoCov">          0 :                 default:</span></a>
+<a name="507"><span class="lineNum">     507 </span><span class="lineNoCov">          0 :                         fprintf(fd, &quot;%u (0x%x)\n&quot;,</span></a>
+<a name="508"><span class="lineNum">     508 </span><span class="lineNoCov">          0 :                             td-&gt;td_planarconfig, td-&gt;td_planarconfig);</span></a>
+<a name="509"><span class="lineNum">     509 </span><span class="lineNoCov">          0 :                         break;</span></a>
+<a name="510"><span class="lineNum">     510 </span>            :                 }</a>
+<a name="511"><span class="lineNum">     511 </span><span class="lineNoCov">          0 :         }</span></a>
+<a name="512"><span class="lineNum">     512 </span><span class="lineCov">          1 :         if (TIFFFieldSet(tif,FIELD_PAGENUMBER))</span></a>
+<a name="513"><span class="lineNum">     513 </span><span class="lineNoCov">          0 :                 fprintf(fd, &quot;  Page Number: %u-%u\n&quot;,</span></a>
+<a name="514"><span class="lineNum">     514 </span><span class="lineNoCov">          0 :                     td-&gt;td_pagenumber[0], td-&gt;td_pagenumber[1]);</span></a>
+<a name="515"><span class="lineNum">     515 </span><span class="lineCov">          1 :         if (TIFFFieldSet(tif,FIELD_COLORMAP)) {</span></a>
+<a name="516"><span class="lineNum">     516 </span><span class="lineNoCov">          0 :                 fprintf(fd, &quot;  Color Map: &quot;);</span></a>
+<a name="517"><span class="lineNum">     517 </span><span class="lineNoCov">          0 :                 if (flags &amp; TIFFPRINT_COLORMAP) {</span></a>
+<a name="518"><span class="lineNum">     518 </span><span class="lineNoCov">          0 :                         fprintf(fd, &quot;\n&quot;);</span></a>
+<a name="519"><span class="lineNum">     519 </span><span class="lineNoCov">          0 :                         n = 1L&lt;&lt;td-&gt;td_bitspersample;</span></a>
+<a name="520"><span class="lineNum">     520 </span><span class="lineNoCov">          0 :                         for (l = 0; l &lt; n; l++)</span></a>
+<a name="521"><span class="lineNum">     521 </span><span class="lineNoCov">          0 :                                 fprintf(fd, &quot;   %5lu: %5u %5u %5u\n&quot;,</span></a>
+<a name="522"><span class="lineNum">     522 </span>            :                                     l,</a>
+<a name="523"><span class="lineNum">     523 </span><span class="lineNoCov">          0 :                                     td-&gt;td_colormap[0][l],</span></a>
+<a name="524"><span class="lineNum">     524 </span><span class="lineNoCov">          0 :                                     td-&gt;td_colormap[1][l],</span></a>
+<a name="525"><span class="lineNum">     525 </span><span class="lineNoCov">          0 :                                     td-&gt;td_colormap[2][l]);</span></a>
+<a name="526"><span class="lineNum">     526 </span>            :                 } else</a>
+<a name="527"><span class="lineNum">     527 </span><span class="lineNoCov">          0 :                         fprintf(fd, &quot;(present)\n&quot;);</span></a>
+<a name="528"><span class="lineNum">     528 </span>            :         }</a>
+<a name="529"><span class="lineNum">     529 </span><span class="lineCov">          1 :         if (TIFFFieldSet(tif,FIELD_REFBLACKWHITE)) {</span></a>
+<a name="530"><span class="lineNum">     530 </span><span class="lineNoCov">          0 :                 fprintf(fd, &quot;  Reference Black/White:\n&quot;);</span></a>
+<a name="531"><span class="lineNum">     531 </span><span class="lineNoCov">          0 :                 for (i = 0; i &lt; 3; i++)</span></a>
+<a name="532"><span class="lineNum">     532 </span><span class="lineNoCov">          0 :                 fprintf(fd, &quot;    %2d: %5g %5g\n&quot;, i,</span></a>
+<a name="533"><span class="lineNum">     533 </span><span class="lineNoCov">          0 :                         td-&gt;td_refblackwhite[2*i+0],</span></a>
+<a name="534"><span class="lineNum">     534 </span><span class="lineNoCov">          0 :                         td-&gt;td_refblackwhite[2*i+1]);</span></a>
+<a name="535"><span class="lineNum">     535 </span>            :         }</a>
+<a name="536"><span class="lineNum">     536 </span><span class="lineCov">          1 :         if (TIFFFieldSet(tif,FIELD_TRANSFERFUNCTION)) {</span></a>
+<a name="537"><span class="lineNum">     537 </span><span class="lineNoCov">          0 :                 fprintf(fd, &quot;  Transfer Function: &quot;);</span></a>
+<a name="538"><span class="lineNum">     538 </span><span class="lineNoCov">          0 :                 if (flags &amp; TIFFPRINT_CURVES) {</span></a>
+<a name="539"><span class="lineNum">     539 </span><span class="lineNoCov">          0 :                         fprintf(fd, &quot;\n&quot;);</span></a>
+<a name="540"><span class="lineNum">     540 </span><span class="lineNoCov">          0 :                         n = 1L&lt;&lt;td-&gt;td_bitspersample;</span></a>
+<a name="541"><span class="lineNum">     541 </span><span class="lineNoCov">          0 :                         for (l = 0; l &lt; n; l++) {</span></a>
+<a name="542"><span class="lineNum">     542 </span><span class="lineNoCov">          0 :                                 fprintf(fd, &quot;    %2lu: %5u&quot;,</span></a>
+<a name="543"><span class="lineNum">     543 </span><span class="lineNoCov">          0 :                                     l, td-&gt;td_transferfunction[0][l]);</span></a>
+<a name="544"><span class="lineNum">     544 </span><span class="lineNoCov">          0 :                                 for (i = 1; i &lt; td-&gt;td_samplesperpixel; i++)</span></a>
+<a name="545"><span class="lineNum">     545 </span><span class="lineNoCov">          0 :                                         fprintf(fd, &quot; %5u&quot;,</span></a>
+<a name="546"><span class="lineNum">     546 </span><span class="lineNoCov">          0 :                                             td-&gt;td_transferfunction[i][l]);</span></a>
+<a name="547"><span class="lineNum">     547 </span><span class="lineNoCov">          0 :                                 fputc('\n', fd);</span></a>
+<a name="548"><span class="lineNum">     548 </span>            :                         }</a>
+<a name="549"><span class="lineNum">     549 </span>            :                 } else</a>
+<a name="550"><span class="lineNum">     550 </span><span class="lineNoCov">          0 :                         fprintf(fd, &quot;(present)\n&quot;);</span></a>
+<a name="551"><span class="lineNum">     551 </span>            :         }</a>
+<a name="552"><span class="lineNum">     552 </span><span class="lineCov">          1 :         if (TIFFFieldSet(tif, FIELD_SUBIFD) &amp;&amp; (td-&gt;td_subifd)) {</span></a>
+<a name="553"><span class="lineNum">     553 </span><span class="lineNoCov">          0 :                 fprintf(fd, &quot;  SubIFD Offsets:&quot;);</span></a>
+<a name="554"><span class="lineNum">     554 </span><span class="lineNoCov">          0 :                 for (i = 0; i &lt; td-&gt;td_nsubifd; i++)</span></a>
+<a name="555"><span class="lineNum">     555 </span>            : #if defined(__WIN32__) &amp;&amp; (defined(_MSC_VER) || defined(__MINGW32__))</a>
+<a name="556"><span class="lineNum">     556 </span>            :                         fprintf(fd, &quot; %5I64u&quot;,</a>
+<a name="557"><span class="lineNum">     557 </span>            :                                 (unsigned __int64) td-&gt;td_subifd[i]);</a>
+<a name="558"><span class="lineNum">     558 </span>            : #else</a>
+<a name="559"><span class="lineNum">     559 </span><span class="lineNoCov">          0 :                         fprintf(fd, &quot; %5llu&quot;,</span></a>
+<a name="560"><span class="lineNum">     560 </span><span class="lineNoCov">          0 :                                 (unsigned long long) td-&gt;td_subifd[i]);</span></a>
+<a name="561"><span class="lineNum">     561 </span>            : #endif</a>
+<a name="562"><span class="lineNum">     562 </span><span class="lineNoCov">          0 :                 fputc('\n', fd);</span></a>
+<a name="563"><span class="lineNum">     563 </span>            :         }</a>
+<a name="564"><span class="lineNum">     564 </span>            : </a>
+<a name="565"><span class="lineNum">     565 </span>            :         /*</a>
+<a name="566"><span class="lineNum">     566 </span>            :         ** Custom tag support.</a>
+<a name="567"><span class="lineNum">     567 </span>            :         */</a>
+<a name="568"><span class="lineNum">     568 </span>            :         {</a>
+<a name="569"><span class="lineNum">     569 </span>            :                 int  i;</a>
+<a name="570"><span class="lineNum">     570 </span>            :                 short count;</a>
+<a name="571"><span class="lineNum">     571 </span>            : </a>
+<a name="572"><span class="lineNum">     572 </span><span class="lineCov">          1 :                 count = (short) TIFFGetTagListCount(tif);</span></a>
+<a name="573"><span class="lineNum">     573 </span><span class="lineCov">          1 :                 for(i = 0; i &lt; count; i++) {</span></a>
+<a name="574"><span class="lineNum">     574 </span><span class="lineNoCov">          0 :                         uint32 tag = TIFFGetTagListEntry(tif, i);</span></a>
+<a name="575"><span class="lineNum">     575 </span>            :                         const TIFFField *fip;</a>
+<a name="576"><span class="lineNum">     576 </span>            :                         uint32 value_count;</a>
+<a name="577"><span class="lineNum">     577 </span><span class="lineNoCov">          0 :                         int mem_alloc = 0;</span></a>
+<a name="578"><span class="lineNum">     578 </span>            :                         void *raw_data;</a>
+<a name="579"><span class="lineNum">     579 </span>            : </a>
+<a name="580"><span class="lineNum">     580 </span><span class="lineNoCov">          0 :                         fip = TIFFFieldWithTag(tif, tag);</span></a>
+<a name="581"><span class="lineNum">     581 </span><span class="lineNoCov">          0 :                         if(fip == NULL)</span></a>
+<a name="582"><span class="lineNum">     582 </span><span class="lineNoCov">          0 :                                 continue;</span></a>
+<a name="583"><span class="lineNum">     583 </span>            : </a>
+<a name="584"><span class="lineNum">     584 </span><span class="lineNoCov">          0 :                         if(fip-&gt;field_passcount) {</span></a>
+<a name="585"><span class="lineNum">     585 </span><span class="lineNoCov">          0 :                                 if (fip-&gt;field_readcount == TIFF_VARIABLE2 ) {</span></a>
+<a name="586"><span class="lineNum">     586 </span><span class="lineNoCov">          0 :                                         if(TIFFGetField(tif, tag, &amp;value_count, &amp;raw_data) != 1)</span></a>
+<a name="587"><span class="lineNum">     587 </span><span class="lineNoCov">          0 :                                                 continue;</span></a>
+<a name="588"><span class="lineNum">     588 </span><span class="lineNoCov">          0 :                                 } else if (fip-&gt;field_readcount == TIFF_VARIABLE ) {</span></a>
+<a name="589"><span class="lineNum">     589 </span>            :                                         uint16 small_value_count;</a>
+<a name="590"><span class="lineNum">     590 </span><span class="lineNoCov">          0 :                                         if(TIFFGetField(tif, tag, &amp;small_value_count, &amp;raw_data) != 1)</span></a>
+<a name="591"><span class="lineNum">     591 </span><span class="lineNoCov">          0 :                                                 continue;</span></a>
+<a name="592"><span class="lineNum">     592 </span><span class="lineNoCov">          0 :                                         value_count = small_value_count;</span></a>
+<a name="593"><span class="lineNum">     593 </span>            :                                 } else {</a>
+<a name="594"><span class="lineNum">     594 </span><span class="lineNoCov">          0 :                                         assert (fip-&gt;field_readcount == TIFF_VARIABLE</span></a>
+<a name="595"><span class="lineNum">     595 </span>            :                                                 || fip-&gt;field_readcount == TIFF_VARIABLE2);</a>
+<a name="596"><span class="lineNum">     596 </span><span class="lineNoCov">          0 :                                         continue;</span></a>
+<a name="597"><span class="lineNum">     597 </span>            :                                 } </a>
+<a name="598"><span class="lineNum">     598 </span>            :                         } else {</a>
+<a name="599"><span class="lineNum">     599 </span><span class="lineNoCov">          0 :                                 if (fip-&gt;field_readcount == TIFF_VARIABLE</span></a>
+<a name="600"><span class="lineNum">     600 </span><span class="lineNoCov">          0 :                                     || fip-&gt;field_readcount == TIFF_VARIABLE2)</span></a>
+<a name="601"><span class="lineNum">     601 </span><span class="lineNoCov">          0 :                                         value_count = 1;</span></a>
+<a name="602"><span class="lineNum">     602 </span><span class="lineNoCov">          0 :                                 else if (fip-&gt;field_readcount == TIFF_SPP)</span></a>
+<a name="603"><span class="lineNum">     603 </span><span class="lineNoCov">          0 :                                         value_count = td-&gt;td_samplesperpixel;</span></a>
+<a name="604"><span class="lineNum">     604 </span>            :                                 else</a>
+<a name="605"><span class="lineNum">     605 </span><span class="lineNoCov">          0 :                                         value_count = fip-&gt;field_readcount;</span></a>
+<a name="606"><span class="lineNum">     606 </span><span class="lineNoCov">          0 :                                 if (fip-&gt;field_tag == TIFFTAG_DOTRANGE</span></a>
+<a name="607"><span class="lineNum">     607 </span><span class="lineNoCov">          0 :                                     &amp;&amp; strcmp(fip-&gt;field_name,&quot;DotRange&quot;) == 0) {</span></a>
+<a name="608"><span class="lineNum">     608 </span>            :                                         /* TODO: This is an evil exception and should not have been</a>
+<a name="609"><span class="lineNum">     609 </span>            :                                            handled this way ... likely best if we move it into</a>
+<a name="610"><span class="lineNum">     610 </span>            :                                            the directory structure with an explicit field in </a>
+<a name="611"><span class="lineNum">     611 </span>            :                                            libtiff 4.1 and assign it a FIELD_ value */</a>
+<a name="612"><span class="lineNum">     612 </span>            :                                         static uint16 dotrange[2];</a>
+<a name="613"><span class="lineNum">     613 </span><span class="lineNoCov">          0 :                                         raw_data = dotrange;</span></a>
+<a name="614"><span class="lineNum">     614 </span><span class="lineNoCov">          0 :                                         TIFFGetField(tif, tag, dotrange+0, dotrange+1);</span></a>
+<a name="615"><span class="lineNum">     615 </span><span class="lineNoCov">          0 :                                 } else if (fip-&gt;field_type == TIFF_ASCII</span></a>
+<a name="616"><span class="lineNum">     616 </span><span class="lineNoCov">          0 :                                            || fip-&gt;field_readcount == TIFF_VARIABLE</span></a>
+<a name="617"><span class="lineNum">     617 </span><span class="lineNoCov">          0 :                                            || fip-&gt;field_readcount == TIFF_VARIABLE2</span></a>
+<a name="618"><span class="lineNum">     618 </span><span class="lineNoCov">          0 :                                            || fip-&gt;field_readcount == TIFF_SPP</span></a>
+<a name="619"><span class="lineNum">     619 </span><span class="lineNoCov">          0 :                                            || value_count &gt; 1) {</span></a>
+<a name="620"><span class="lineNum">     620 </span><span class="lineNoCov">          0 :                                         if(TIFFGetField(tif, tag, &amp;raw_data) != 1)</span></a>
+<a name="621"><span class="lineNum">     621 </span><span class="lineNoCov">          0 :                                                 continue;</span></a>
+<a name="622"><span class="lineNum">     622 </span>            :                                 } else {</a>
+<a name="623"><span class="lineNum">     623 </span><span class="lineNoCov">          0 :                                         raw_data = _TIFFmalloc(</span></a>
+<a name="624"><span class="lineNum">     624 </span><span class="lineNoCov">          0 :                                             _TIFFDataSize(fip-&gt;field_type)</span></a>
+<a name="625"><span class="lineNum">     625 </span><span class="lineNoCov">          0 :                                             * value_count);</span></a>
+<a name="626"><span class="lineNum">     626 </span><span class="lineNoCov">          0 :                                         mem_alloc = 1;</span></a>
+<a name="627"><span class="lineNum">     627 </span><span class="lineNoCov">          0 :                                         if(TIFFGetField(tif, tag, raw_data) != 1) {</span></a>
+<a name="628"><span class="lineNum">     628 </span><span class="lineNoCov">          0 :                                                 _TIFFfree(raw_data);</span></a>
+<a name="629"><span class="lineNum">     629 </span><span class="lineNoCov">          0 :                                                 continue;</span></a>
+<a name="630"><span class="lineNum">     630 </span>            :                                         }</a>
+<a name="631"><span class="lineNum">     631 </span>            :                                 }</a>
+<a name="632"><span class="lineNum">     632 </span>            :                         }</a>
+<a name="633"><span class="lineNum">     633 </span>            : </a>
+<a name="634"><span class="lineNum">     634 </span>            :                         /*</a>
+<a name="635"><span class="lineNum">     635 </span>            :                          * Catch the tags which needs to be specially handled</a>
+<a name="636"><span class="lineNum">     636 </span>            :                          * and pretty print them. If tag not handled in</a>
+<a name="637"><span class="lineNum">     637 </span>            :                          * _TIFFPrettyPrintField() fall down and print it as</a>
+<a name="638"><span class="lineNum">     638 </span>            :                          * any other tag.</a>
+<a name="639"><span class="lineNum">     639 </span>            :                          */</a>
+<a name="640"><span class="lineNum">     640 </span><span class="lineNoCov">          0 :                         if (!_TIFFPrettyPrintField(tif, fip, fd, tag, value_count, raw_data))</span></a>
+<a name="641"><span class="lineNum">     641 </span><span class="lineNoCov">          0 :                                 _TIFFPrintField(fd, fip, value_count, raw_data);</span></a>
+<a name="642"><span class="lineNum">     642 </span>            : </a>
+<a name="643"><span class="lineNum">     643 </span><span class="lineNoCov">          0 :                         if(mem_alloc)</span></a>
+<a name="644"><span class="lineNum">     644 </span><span class="lineNoCov">          0 :                                 _TIFFfree(raw_data);</span></a>
+<a name="645"><span class="lineNum">     645 </span>            :                 }</a>
+<a name="646"><span class="lineNum">     646 </span>            :         }</a>
+<a name="647"><span class="lineNum">     647 </span>            :         </a>
+<a name="648"><span class="lineNum">     648 </span><span class="lineCov">          1 :         if (tif-&gt;tif_tagmethods.printdir)</span></a>
+<a name="649"><span class="lineNum">     649 </span><span class="lineNoCov">          0 :                 (*tif-&gt;tif_tagmethods.printdir)(tif, fd, flags);</span></a>
+<a name="650"><span class="lineNum">     650 </span>            : </a>
+<a name="651"><span class="lineNum">     651 </span><span class="lineCov">          1 :         _TIFFFillStriles( tif );</span></a>
+<a name="652"><span class="lineNum">     652 </span>            :         </a>
+<a name="653"><span class="lineNum">     653 </span><span class="lineCov">          1 :         if ((flags &amp; TIFFPRINT_STRIPS) &amp;&amp;</span></a>
+<a name="654"><span class="lineNum">     654 </span><span class="lineCov">          1 :             TIFFFieldSet(tif,FIELD_STRIPOFFSETS)) {</span></a>
+<a name="655"><span class="lineNum">     655 </span>            :                 uint32 s;</a>
+<a name="656"><span class="lineNum">     656 </span>            : </a>
+<a name="657"><span class="lineNum">     657 </span><span class="lineCov">          1 :                 fprintf(fd, &quot;  %lu %s:\n&quot;,</span></a>
+<a name="658"><span class="lineNum">     658 </span><span class="lineCov">          1 :                     (long) td-&gt;td_nstrips,</span></a>
+<a name="659"><span class="lineNum">     659 </span><span class="lineCov">          1 :                     isTiled(tif) ? &quot;Tiles&quot; : &quot;Strips&quot;);</span></a>
+<a name="660"><span class="lineNum">     660 </span><span class="lineCov">          2 :                 for (s = 0; s &lt; td-&gt;td_nstrips; s++)</span></a>
+<a name="661"><span class="lineNum">     661 </span>            : #if defined(__WIN32__) &amp;&amp; (defined(_MSC_VER) || defined(__MINGW32__))</a>
+<a name="662"><span class="lineNum">     662 </span>            :                         fprintf(fd, &quot;    %3lu: [%8I64u, %8I64u]\n&quot;,</a>
+<a name="663"><span class="lineNum">     663 </span>            :                             (unsigned long) s,</a>
+<a name="664"><span class="lineNum">     664 </span>            :                             (unsigned __int64) td-&gt;td_stripoffset[s],</a>
+<a name="665"><span class="lineNum">     665 </span>            :                             (unsigned __int64) td-&gt;td_stripbytecount[s]);</a>
+<a name="666"><span class="lineNum">     666 </span>            : #else</a>
+<a name="667"><span class="lineNum">     667 </span><span class="lineCov">          1 :                         fprintf(fd, &quot;    %3lu: [%8llu, %8llu]\n&quot;,</span></a>
+<a name="668"><span class="lineNum">     668 </span>            :                             (unsigned long) s,</a>
+<a name="669"><span class="lineNum">     669 </span><span class="lineCov">          1 :                             (unsigned long long) td-&gt;td_stripoffset[s],</span></a>
+<a name="670"><span class="lineNum">     670 </span><span class="lineCov">          1 :                             (unsigned long long) td-&gt;td_stripbytecount[s]);</span></a>
+<a name="671"><span class="lineNum">     671 </span>            : #endif</a>
+<a name="672"><span class="lineNum">     672 </span>            :         }</a>
+<a name="673"><span class="lineNum">     673 </span><span class="lineCov">          1 : }</span></a>
+<a name="674"><span class="lineNum">     674 </span>            : </a>
+<a name="675"><span class="lineNum">     675 </span>            : void</a>
+<a name="676"><span class="lineNum">     676 </span><span class="lineNoCov">          0 : _TIFFprintAscii(FILE* fd, const char* cp)</span></a>
+<a name="677"><span class="lineNum">     677 </span>            : {</a>
+<a name="678"><span class="lineNum">     678 </span><span class="lineNoCov">          0 :         _TIFFprintAsciiBounded( fd, cp, strlen(cp));</span></a>
+<a name="679"><span class="lineNum">     679 </span><span class="lineNoCov">          0 : }</span></a>
+<a name="680"><span class="lineNum">     680 </span>            : </a>
+<a name="681"><span class="lineNum">     681 </span>            : static void</a>
+<a name="682"><span class="lineNum">     682 </span><span class="lineNoCov">          0 : _TIFFprintAsciiBounded(FILE* fd, const char* cp, int max_chars)</span></a>
+<a name="683"><span class="lineNum">     683 </span>            : {</a>
+<a name="684"><span class="lineNum">     684 </span><span class="lineNoCov">          0 :         for (; max_chars &gt; 0 &amp;&amp; *cp != '\0'; cp++, max_chars--) {</span></a>
+<a name="685"><span class="lineNum">     685 </span>            :                 const char* tp;</a>
+<a name="686"><span class="lineNum">     686 </span>            : </a>
+<a name="687"><span class="lineNum">     687 </span><span class="lineNoCov">          0 :                 if (isprint((int)*cp)) {</span></a>
+<a name="688"><span class="lineNum">     688 </span><span class="lineNoCov">          0 :                         fputc(*cp, fd);</span></a>
+<a name="689"><span class="lineNum">     689 </span><span class="lineNoCov">          0 :                         continue;</span></a>
+<a name="690"><span class="lineNum">     690 </span>            :                 }</a>
+<a name="691"><span class="lineNum">     691 </span><span class="lineNoCov">          0 :                 for (tp = &quot;\tt\bb\rr\nn\vv&quot;; *tp; tp++)</span></a>
+<a name="692"><span class="lineNum">     692 </span><span class="lineNoCov">          0 :                         if (*tp++ == *cp)</span></a>
+<a name="693"><span class="lineNum">     693 </span><span class="lineNoCov">          0 :                                 break;</span></a>
+<a name="694"><span class="lineNum">     694 </span><span class="lineNoCov">          0 :                 if (*tp)</span></a>
+<a name="695"><span class="lineNum">     695 </span><span class="lineNoCov">          0 :                         fprintf(fd, &quot;\\%c&quot;, *tp);</span></a>
+<a name="696"><span class="lineNum">     696 </span>            :                 else</a>
+<a name="697"><span class="lineNum">     697 </span><span class="lineNoCov">          0 :                         fprintf(fd, &quot;\\%03o&quot;, *cp &amp; 0xff);</span></a>
+<a name="698"><span class="lineNum">     698 </span>            :         }</a>
+<a name="699"><span class="lineNum">     699 </span><span class="lineNoCov">          0 : }</span></a>
+<a name="700"><span class="lineNum">     700 </span>            : </a>
+<a name="701"><span class="lineNum">     701 </span>            : void</a>
+<a name="702"><span class="lineNum">     702 </span><span class="lineNoCov">          0 : _TIFFprintAsciiTag(FILE* fd, const char* name, const char* value)</span></a>
+<a name="703"><span class="lineNum">     703 </span>            : {</a>
+<a name="704"><span class="lineNum">     704 </span><span class="lineNoCov">          0 :         fprintf(fd, &quot;  %s: \&quot;&quot;, name);</span></a>
+<a name="705"><span class="lineNum">     705 </span><span class="lineNoCov">          0 :         _TIFFprintAscii(fd, value);</span></a>
+<a name="706"><span class="lineNum">     706 </span><span class="lineNoCov">          0 :         fprintf(fd, &quot;\&quot;\n&quot;);</span></a>
+<a name="707"><span class="lineNum">     707 </span><span class="lineNoCov">          0 : }</span></a>
+<a name="708"><span class="lineNum">     708 </span>            : </a>
+<a name="709"><span class="lineNum">     709 </span>            : /* vim: set ts=8 sts=8 sw=8 noet: */</a>
+<a name="710"><span class="lineNum">     710 </span>            : /*</a>
+<a name="711"><span class="lineNum">     711 </span>            :  * Local Variables:</a>
+<a name="712"><span class="lineNum">     712 </span>            :  * mode: c</a>
+<a name="713"><span class="lineNum">     713 </span>            :  * c-basic-offset: 8</a>
+<a name="714"><span class="lineNum">     714 </span>            :  * fill-column: 78</a>
+<a name="715"><span class="lineNum">     715 </span>            :  * End:</a>
+<a name="716"><span class="lineNum">     716 </span>            :  */</a>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.14</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>
