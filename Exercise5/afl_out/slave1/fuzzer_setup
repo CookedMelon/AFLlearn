@@ -1,0 +1,8 @@
+# environment variables:
+AFL_CUSTOM_INFO_PROGRAM=./install/bin/xmllint
+AFL_CUSTOM_INFO_PROGRAM_ARGV=--memory --noenc --nocdata --dtdattr --loaddtd --valid --xinclude @@
+AFL_CUSTOM_INFO_OUT=afl_out/slave1
+AFL_PATH=/home/cc/AFL-2.57b/
+AFL_SKIP_CPUFREQ=1
+# command line:
+'afl-fuzz' '-m' 'none' '-i' '-' '-o' 'afl_out' '-s' '234' '-S' 'slave1' '--' './install/bin/xmllint' '--memory' '--noenc' '--nocdata' '--dtdattr' '--loaddtd' '--valid' '--xinclude' '@@'
